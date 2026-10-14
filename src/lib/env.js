@@ -5,10 +5,8 @@
 const clean = (v) => (typeof v === "string" && v.trim() && !v.includes("YOUR_") ? v.trim() : "");
 
 export const MAPBOX_TOKEN = clean(import.meta.env.VITE_MAPBOX_ACCESS_TOKEN);
-export const MAPILLARY_TOKEN = clean(import.meta.env.VITE_MAPILLARY_ACCESS_TOKEN);
 
 export const HAS_MAPBOX = MAPBOX_TOKEN.startsWith("pk.");
-export const HAS_MAPILLARY = MAPILLARY_TOKEN.length > 0;
 
 // Without a Mapbox token, Map and 3D fall back to MapLibre with OpenFreeMap vector tiles
 // (no key needed). Satellite needs licensed imagery, so it shows a setup state instead.

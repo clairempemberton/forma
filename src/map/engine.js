@@ -33,7 +33,6 @@ export const MODES = [
   { id: "map", label: "Map", icon: "map" },
   { id: "satellite", label: "Satellite", icon: "satellite" },
   { id: "3d", label: "3D", icon: "cube" },
-  { id: "street", label: "Street", icon: "street" },
 ];
 
 export function styleFor(mode) {
@@ -78,4 +77,4 @@ export function setTerrain(map, on) {
   } catch { /* terrain is an enhancement */ }
 }
 
-export const PITCH = { "3d": 62, map: 0, satellite: 0, street: 0 };
+export const PITCH = { "3d": 62, map: 0, satellite: 0 };

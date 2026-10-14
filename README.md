@@ -46,7 +46,6 @@ Optional. Create `.env.local` (gitignored):
 
 ```
 VITE_MAPBOX_ACCESS_TOKEN=pk.your-public-token
-VITE_MAPILLARY_ACCESS_TOKEN=MLY|your-client-token
 ```
 
 | View | With tokens | Without |
@@ -54,7 +53,6 @@ VITE_MAPILLARY_ACCESS_TOKEN=MLY|your-client-token
 | Map | Mapbox Standard | MapLibre + OpenFreeMap Liberty |
 | Satellite | Mapbox Standard Satellite | Setup message |
 | 3D | Mapbox 3D buildings and terrain | MapLibre with OSM building heights |
-| Street | Mapillary photos within 60 m | Setup message |
 
 Search falls back from project text to place lookup (Mapbox Geocoding, or Photon without a token).
 Use a URL-restricted public Mapbox token for anything you deploy: Vite inlines `VITE_*` values into the build.
@@ -62,10 +60,10 @@ Use a URL-restricted public Mapbox token for anything you deploy: Vite inlines `
 ## Deploy
 
 `.github/workflows/pages.yml` builds and publishes to GitHub Pages on every push to `main`.
-Add `VITE_MAPBOX_ACCESS_TOKEN` and `VITE_MAPILLARY_ACCESS_TOKEN` as repository secrets, and set
+Add `VITE_MAPBOX_ACCESS_TOKEN` as a repository secret, and set
 Pages → Source to "GitHub Actions".
 
 ## Data credits
 
-Map data © OpenStreetMap contributors (ODbL). Street-level photos from Mapillary contributors (CC BY-SA 4.0).
+Map data © OpenStreetMap contributors (ODbL).
 Project facts © their publishers, linked from each project.

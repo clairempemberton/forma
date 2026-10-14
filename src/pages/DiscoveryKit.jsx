@@ -29,7 +29,7 @@ export function SiteFooter() {
         </nav>
         <div className="dsc-footer__col">
           <p className="t-eyebrow">Data</p>
-          <p className="t-compact t-muted">Map data © OpenStreetMap contributors (ODbL). Base map tiles by OpenFreeMap. Street-level photos from Mapillary contributors.</p>
+          <p className="t-compact t-muted">Map data © OpenStreetMap contributors (ODbL). Base map tiles by OpenFreeMap.</p>
         </div>
       </div>
     </footer>

@@ -88,8 +88,6 @@ export default function Explore() {
           markers={markers}
           onMarkerClick={(m) => setSel(sel === m.id ? null : m.id)}
           legend={<Legend items={LEGEND || LEGEND_PROPOSAL} />}
-          streetTarget={selected?.lngLat}
-          streetContext={COPY.streetContext}
         />
         <div className="map-chip glass" aria-live="polite"><Icon name="eye" />Showing: <strong>{option ? optName(option.id) : "Today"}</strong></div>
       </div>

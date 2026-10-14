@@ -1,6 +1,6 @@
 import Icon from "../components/Icon.jsx";
 import { Empty, Notice, Truth } from "../components/ui.jsx";
-import { HAS_MAPBOX, HAS_MAPILLARY } from "../lib/env.js";
+import { HAS_MAPBOX } from "../lib/env.js";
 import { useReducedMotion } from "../lib/motion.js";
 import "../map/map.css";
 import "./outcomes.css";
@@ -102,47 +102,6 @@ export default function States() {
               </MapShell>
             </Specimen>
 
-            <Specimen title="Street-level needs setup" tag="Setup" tall when={`Street view is opened without a Mapillary token${HAS_MAPILLARY ? "" : " (the case in this build)"}.`} recovery="Back to map, or open the spot on Mapillary directly.">
-              <div className="sv">
-                <div className="sv__state">
-                  <div className="sv__card panel-float">
-                    <span className="badge badge--warning">Setup needed</span>
-                    <h3 className="t-h3">Street-level imagery needs a Mapillary token</h3>
-                    <p className="t-compact t-muted">Forma uses real photos from Mapillary, licensed CC BY-SA 4.0. Add a client token to <span className="t-mono">.env.local</span>:</p>
-                    <pre className="mv__code">VITE_MAPILLARY_ACCESS_TOKEN=MLY|…</pre>
-                    <div className="row"><span className="btn btn--secondary btn--sm"><Icon name="arrowLeft" />Back to map</span></div>
-                  </div>
-                </div>
-              </div>
-            </Specimen>
-
-            <Specimen title="No street-level photos nearby" tag="Unavailable" tall when="Mapillary has no image within 60 m of the selected spot." recovery="Forma never substitutes a photo of somewhere else; back to map.">
-              <div className="sv">
-                <div className="sv__state">
-                  <div className="sv__card panel-float">
-                    <span className="badge badge--outline badge--plain">Unavailable</span>
-                    <h3 className="t-h3">No street-level photos here yet</h3>
-                    <p className="t-compact t-muted">Mapillary has no image within 60 m of this spot. Forma won't show a photo of somewhere else instead.</p>
-                    <div className="row" style={{ flexWrap: "wrap" }}>
-                      <span className="btn btn--secondary btn--sm"><Icon name="arrowLeft" />Back to map</span>
-                      <span className="btn btn--ghost btn--sm">Open on Mapillary<Icon name="external" /></span>
-                    </div>
-                  </div>
-                </div>
-              </div>
-            </Specimen>
-
-            <Specimen title="Looking for street-level photos" tag="Loading" tall when="Street view is opened and Forma is searching Mapillary for the nearest photo of the selected spot." recovery="Back to map at any time; the search is cancelled if you leave.">
-              <div className="sv">
-                <div className="sv__state">
-                  <div className="sv__card panel-float">
-                    <span className="mv__spinner" aria-hidden="true" />
-                    <p className="t-compact">Looking for street-level photos within 60 m…</p>
-                    <div className="row"><span className="btn btn--secondary btn--sm"><Icon name="arrowLeft" />Back to map</span></div>
-                  </div>
-                </div>
-              </div>
-            </Specimen>
           </div>
         </section>
 

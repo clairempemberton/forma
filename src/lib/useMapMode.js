@@ -1,6 +1,6 @@
 import { useSearchParams } from "react-router-dom";
 
-const VALID = ["map", "satellite", "3d", "street"];
+const VALID = ["map", "satellite", "3d"];
 
 // The map view lives in the URL (?view=3d) so it survives reloads and can be shared.
 export function useMapMode(fallback = "map") {

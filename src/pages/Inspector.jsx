@@ -124,8 +124,6 @@ export default function Inspector() {
           markers={markers}
           onMarkerClick={(m) => m.kind === "feature" && navigate(`${PROJECT_BASE}/inspect/${m.fid}${qs}`)}
           legend={<Legend items={LEGEND || LEGEND_PROPOSAL} />}
-          streetTarget={feature.lngLat}
-          streetContext={`Today, near ${feature.id} ${feature.name}. ${COPY.photoNote}`}
           hud={false}
         />
       </div>

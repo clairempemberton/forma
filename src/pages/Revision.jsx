@@ -3,7 +3,6 @@ import { prefersReducedMotion, useIsMobile } from "../lib/motion.js";
 import { Link } from "react-router-dom";
 import CompareMap from "../map/CompareMap.jsx";
 import ModeSwitch from "../map/ModeSwitch.jsx";
-import { MODES } from "../map/engine.js";
 import Icon from "../components/Icon.jsx";
 import { Notice, StatusBadge, Truth, fmtDate } from "../components/ui.jsx";
 import { CAMERA, COPY, DECISION, PROJECT, REVISION_CHANGES, SOURCES, THEME_BY_ID, VERSIONS, optName } from "../data/featured.js";
@@ -17,14 +16,11 @@ const derive = () => ({
   START: fitCamera(REVISION_CHANGES.map((c) => c.lngLat), { px: 300, fallback: CAMERA.home }),
 });
 const MONTH = { month: "short", year: "numeric" };
-// No matched street-level renders exist for these projects, so the compare offers map views only.
-const COMPARE_MODES = MODES.filter((m) => m.id !== "street");
 
 // R16 · Revision reveal — how the chosen option was refined between the feedback round and the decision.
 export default function Revision() {
   const { V1, V2, MADE, START } = useMemo(derive, []);
-  const [viewMode, setMode] = useMapMode();
-  const mode = viewMode === "street" ? "map" : viewMode;
+  const [mode, setMode] = useMapMode();
   const [sel, setSel] = useParam("change");
   const [pos, setPos] = useState(50);
   const change = REVISION_CHANGES.find((c) => c.id === sel) || null;
@@ -112,7 +108,7 @@ export default function Revision() {
           onPosition={setPos}
           label={`Compare the ${V1.label.toLowerCase()} and ${V2.label.toLowerCase()} versions`}
         >
-          <div className="mv__top"><ModeSwitch value={mode} onChange={setMode} modes={COMPARE_MODES} /></div>
+          <div className="mv__top"><ModeSwitch value={mode} onChange={setMode} /></div>
           {change && (
             <div className="rev__pop panel-float" aria-live="polite">
               <div className="row">

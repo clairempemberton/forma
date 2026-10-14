@@ -2,7 +2,7 @@ import { useLayoutEffect, useRef, useState } from "react";
 import { MODES } from "./engine.js";
 import Icon from "../components/Icon.jsx";
 
-// MAP | SATELLITE | 3D | STREET — a radiogroup with a sliding thumb.
+// MAP | SATELLITE | 3D — a radiogroup with a sliding thumb.
 export default function ModeSwitch({ value, onChange, modes = MODES, label = "Map view" }) {
   const refs = useRef({});
   const [thumb, setThumb] = useState(null);

@@ -134,8 +134,6 @@ export default function Home() {
           onMarkerClick={(m) => m.kind === "project" && select(m.id, true)}
           onReady={(map) => { mapRef.current = map; fitAll(results, false); }}
           ariaLabel="Map of projects in Portland"
-          streetTarget={selected?.lngLat}
-          streetContext="Street-level photos near the selected project."
         />
       </div>
 

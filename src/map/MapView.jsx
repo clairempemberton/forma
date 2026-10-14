@@ -1,4 +1,4 @@
-import { lazy, Suspense, useCallback, useEffect, useMemo, useRef, useState } from "react";
+import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { loadEngine, styleFor, styleKey, applyBasemapConfig, setTerrain, PITCH } from "./engine.js";
 import { addOverlays, setData, setVisible, LAYER_GROUPS } from "./overlays.js";
 import { ENGINE, HAS_MAPBOX } from "../lib/env.js";
@@ -12,7 +12,6 @@ import Marker from "./Marker.jsx";
 import Icon from "../components/Icon.jsx";
 import "./map.css";
 
-const StreetView = lazy(() => import("./StreetView.jsx"));
 
 // One OSM existing-conditions file per project, loaded once.
 const osmCache = {};
@@ -43,8 +42,6 @@ export default function MapView({
   modeSwitch = true,
   hud = true,
   legend = null,
-  streetTarget,
-  streetContext,
   onReady,
   onCameraChange,
   ariaLabel = COPY.mapLabel,
@@ -184,7 +181,7 @@ export default function MapView({
     const prev = modeRef.current;
     modeRef.current = mode;
     const map = mapRef.current;
-    if (!map || mode === "street") return;
+    if (!map) return;
     const key = styleKey(mode);
     if (key !== styleRef.current) {
       styleRef.current = key;
@@ -197,7 +194,7 @@ export default function MapView({
         installOverlays();
       }
     }
-    if (prev !== mode && !(prev === "street")) {
+    if (prev !== mode) {
       const target = { pitch: PITCH[mode] ?? 0, duration: flyDuration(1100), essential: false };
       if (mode === "3d") target.bearing = map.getBearing() === 0 ? -28 : map.getBearing();
       if (prev === "3d") target.bearing = 0;
@@ -280,7 +277,7 @@ export default function MapView({
 
       {status === "error" && <MapError error={error} />}
 
-      {status === "ready" && mode !== "street" && (
+      {status === "ready" && (
         <div className="mv__markers" aria-label="Map markers">
           {projected.map((m) =>
             m.kind === "cluster" ? (
@@ -306,14 +303,6 @@ export default function MapView({
         </div>
       )}
 
-      {mode === "street" && (
-        <div className="mv__street">
-          <Suspense fallback={<div className="mv__loading"><span className="mv__loading-label"><span className="mv__spinner" />Loading street view</span></div>}>
-            <StreetView lngLat={streetTarget || camState?.center || initialCamera.center} onBack={() => onModeChange?.("map")} context={streetContext} />
-          </Suspense>
-        </div>
-      )}
-
       {satUnavailable && status === "ready" && <SatelliteSetup onBack={() => onModeChange?.("map")} />}
 
       {modeSwitch && onModeChange && (
@@ -322,7 +311,7 @@ export default function MapView({
         </div>
       )}
 
-      {controls && status === "ready" && mode !== "street" && (
+      {controls && status === "ready" && (
         <MapControls
           map={mapRef.current}
           mode={mode}
@@ -335,9 +324,9 @@ export default function MapView({
         />
       )}
 
-      {legend && legendOpen && mode !== "street" && <div className="mv__legend panel-float">{legend}</div>}
+      {legend && legendOpen && <div className="mv__legend panel-float">{legend}</div>}
 
-      {hud && status === "ready" && mode !== "street" && camState && <MapHud cam={camState} engine={ENGINE} mode={mode} />}
+      {hud && status === "ready" && camState && <MapHud cam={camState} engine={ENGINE} mode={mode} />}
 
       {children}
     </div>

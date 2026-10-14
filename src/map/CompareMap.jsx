@@ -1,11 +1,9 @@
-import { lazy, Suspense, useCallback, useEffect, useRef, useState } from "react";
+import { useCallback, useEffect, useRef, useState } from "react";
 import MapView from "./MapView.jsx";
 import ModeSwitch from "./ModeSwitch.jsx";
 import MapControls from "./MapControls.jsx";
 import Icon from "../components/Icon.jsx";
 import { CAMERA } from "../data/featured.js";
-
-const SceneCompare = lazy(() => import("../components/SceneCompare.jsx"));
 
 /**
  * Before/after with two synchronised maps. Both share one camera (centre, zoom, bearing,
@@ -14,7 +12,7 @@ const SceneCompare = lazy(() => import("../components/SceneCompare.jsx"));
  */
 export default function CompareMap({
   left, right, mode = "map", onModeChange, initialCamera = CAMERA.home, position, onPosition, markers = [], onMarkerClick,
-  camera, scene, children, label = "Compare today and the proposal",
+  camera, children, label = "Compare today and the proposal",
 }) {
   const [internalPos, setInternalPos] = useState(50);
   const pos = position ?? internalPos;
@@ -60,26 +58,16 @@ export default function CompareMap({
 
   useEffect(() => () => { maps.current = { a: null, b: null }; }, []);
 
-  const isStreet = mode === "street";
-
   return (
     <div className="cmp" ref={rootRef} data-mode={mode}>
-      {isStreet ? (
-        <Suspense fallback={null}>
-          <SceneCompare scene={scene} position={pos} />
-        </Suspense>
-      ) : (
-        <>
-          <div className="cmp__layer">
-            <MapView mode={mode} initialCamera={initialCamera} proposal={left.proposal} showProposal={!!left.proposal} controls={false} modeSwitch={false} hud={false}
-              markers={left.markers || []} onMarkerClick={onMarkerClick} onReady={ready("a")} ariaLabel={`${left.label} map`} />
-          </div>
-          <div className="cmp__layer cmp__layer--top" style={{ clipPath: `inset(0 0 0 ${pos}%)` }}>
-            <MapView mode={mode} initialCamera={initialCamera} camera={camera} proposal={right.proposal} showProposal={!!right.proposal} controls={false} modeSwitch={false} hud={false}
-              markers={markers} onMarkerClick={onMarkerClick} onReady={ready("b")} ariaLabel={`${right.label} map`} />
-          </div>
-        </>
-      )}
+      <div className="cmp__layer">
+        <MapView mode={mode} initialCamera={initialCamera} proposal={left.proposal} showProposal={!!left.proposal} controls={false} modeSwitch={false} hud={false}
+          markers={left.markers || []} onMarkerClick={onMarkerClick} onReady={ready("a")} ariaLabel={`${left.label} map`} />
+      </div>
+      <div className="cmp__layer cmp__layer--top" style={{ clipPath: `inset(0 0 0 ${pos}%)` }}>
+        <MapView mode={mode} initialCamera={initialCamera} camera={camera} proposal={right.proposal} showProposal={!!right.proposal} controls={false} modeSwitch={false} hud={false}
+          markers={markers} onMarkerClick={onMarkerClick} onReady={ready("b")} ariaLabel={`${right.label} map`} />
+      </div>
 
       <div className="cmp__tag cmp__tag--left" style={{ opacity: pos < 12 ? 0 : 1 }}><span className="cmp__dot" />{left.label}</div>
       <div className="cmp__tag cmp__tag--right" style={{ opacity: pos > 88 ? 0 : 1 }}><span className="cmp__dot cmp__dot--accent" />{right.label}</div>
@@ -102,7 +90,7 @@ export default function CompareMap({
       </div>
 
       {onModeChange && <div className="mv__top"><ModeSwitch value={mode} onChange={onModeChange} /></div>}
-      {!isStreet && topMap && (
+      {topMap && (
         <div className="cmp__controls">
           <MapControls map={topMap} mode={mode} initialCamera={initialCamera} layers={{ existing: true, proposal: true, comments: true }} onLayers={() => {}} hideLayers />
         </div>

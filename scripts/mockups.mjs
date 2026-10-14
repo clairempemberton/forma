@@ -26,7 +26,6 @@ const SHOTS = [
   ["feedback-pin", `/projects/hawthorne/feedback?at=${AT_36TH}`, DESKTOP, 5000],
   ["decision", "/projects/hawthorne/decision", DESKTOP, 4000],
   ["themes", "/projects/hawthorne/themes", DESKTOP, 4000],
-  ["street", "/projects/hawthorne/explore?view=street", DESKTOP, 9000],
   ["staff-triage", "/staff/triage", DESKTOP, 3000],
   ["phone-home", "/", PHONE, 5000],
   ["phone-overview", "/projects/hawthorne", PHONE, 5000],

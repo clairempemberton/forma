@@ -215,8 +215,6 @@ export default function Perspectives() {
           onMarkerClick={onMarkerClick}
           onCameraChange={(c) => { zoomRef.current = c.zoom; }}
           legend={<CommentLegend />}
-          streetTarget={selected?.lngLat}
-          streetContext="Today, as photographed. Comment pins are shown on the map view."
         >
           <div className="map-chip glass" aria-live="polite">
             <Icon name="comment" /><strong className="t-num">{visible.length}</strong> comments

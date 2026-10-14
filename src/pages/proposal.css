@@ -371,7 +371,4 @@ span.txt-pg__sub { display: inline; }
   .txt-pg__osm::after { content: " (" attr(href) ")"; }
   a { color: inherit !important; }
 }
-/* Nothing to slide across until both street-level renders exist. */
-.cmp-pg .cmp[data-mode="street"]:has(.scn__pending) .cmp__divider,
-.cmp-pg .cmp[data-mode="street"]:has(.scn__pending) .cmp__tag { display: none; }
 @media (max-width: 1180px) and (min-width: 768px) { .ins-pg .mode-switch__label { display: none; } }

@@ -307,11 +307,9 @@
 .sts__stage { position: relative; height: 300px; border-radius: var(--r-card); overflow: hidden; background: var(--surface); border: 1px solid var(--line); isolation: isolate; }
 .sts__stage[data-tall] { height: 400px; }
 .sts__stage .mv { position: absolute; inset: 0; min-height: 0; }
-.sts__stage .mv__state, .sts__stage .sv__state { padding: var(--s4); }
+.sts__stage .mv__state { padding: var(--s4); }
 .sts__stage .empty { padding: var(--s4); }
-.sts__stage .sv__state { background: radial-gradient(circle at 50% 30%, #fff, var(--bg-2) 75%); }
-.sts__stage .sv__card, .sts__stage .mv__setup { padding: var(--s5); }
-.sts__stage .scn { padding: var(--s4); }
+.sts__stage .mv__setup { padding: var(--s5); }
 .sts__fake-map { opacity: 1; mask-image: none; background-color: #eef0f3; }
 .sts__cap { display: grid; gap: 4px; font: var(--t-caption); color: var(--ink-2); }
 .sts__cap strong { color: var(--ink); font-weight: 600; }
@@ -338,7 +336,6 @@
   .sts__card[data-wide] { grid-column: auto; }
   .sts__stage { height: 280px; }
   .sts__stage[data-tall] { height: 360px; }
-  .sts__stage[data-tall]:has(.scn) { height: 600px; }
   .sts__motion { grid-template-columns: 1fr; }
 }
 .sts .field__error svg { width: 14px; height: 14px; flex: none; }

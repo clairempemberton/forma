@@ -132,21 +132,6 @@
 .mk--pick::after { content: ""; position: absolute; left: -6px; top: -3px; width: 12px; height: 6px; border-radius: 50%; background: rgba(14, 17, 22, 0.25); filter: blur(1px); }
 @keyframes drop { from { transform: translateY(-14px); opacity: 0; } }
 
-/* ——— Street view ——— */
-.mv__street { position: absolute; inset: 0; z-index: 7; background: var(--bg-2); }
-.sv { position: absolute; inset: 0; }
-/* .sv prefix outranks mapillary.css, which loads later and sets .mapillary-viewer { position: relative }. */
-.sv .sv__viewer { position: absolute; inset: 0; z-index: 0; }
-.sv__state { position: absolute; inset: 0; display: grid; place-items: center; padding: var(--s6);
-  background: radial-gradient(circle at 50% 40%, #fff 0%, var(--bg-2) 70%); }
-.sv__card { max-width: 440px; padding: var(--s6); display: grid; gap: 10px; justify-items: start; }
-.sv__top { position: absolute; top: 16px; left: 16px; right: 16px; display: flex; justify-content: space-between; z-index: 3; pointer-events: none; }
-.sv__top > * { pointer-events: auto; }
-.sv__compass { display: inline-flex; align-items: center; gap: 10px; height: 40px; padding: 0 12px 0 8px; border-radius: var(--r-pill); }
-.sv__needle { width: 24px; height: 24px; border-radius: 50%; box-shadow: inset 0 0 0 1.5px var(--line-2); position: relative; }
-.sv__needle::before { content: ""; position: absolute; left: 50%; top: 3px; width: 0; height: 0; transform: translateX(-50%); border: 4px solid transparent; border-bottom: 8px solid var(--accent); border-top: 0; }
-.sv__bottom { position: absolute; left: 16px; bottom: 16px; z-index: 3; display: flex; flex-wrap: wrap; gap: 8px 12px; align-items: center; padding: 10px 14px; border-radius: 14px; max-width: calc(100% - 32px); }
-
 /* ——— Compare ——— */
 .cmp { position: relative; width: 100%; height: 100%; min-height: 360px; overflow: hidden; background: var(--bg-2); isolation: isolate; user-select: none; }
 .cmp__layer { position: absolute; inset: 0; }
@@ -172,13 +157,3 @@
 .cmp__controls .mv__controls { pointer-events: auto; }
 @media (max-width: 639px) { .cmp__tag--right { right: 16px; top: 60px; } .cmp .mv__top { top: auto; } .cmp__controls { display: none; } }
 
-/* Street-level scene compare */
-.scn { position: absolute; inset: 0; display: grid; place-items: center; padding: var(--s6); background: radial-gradient(circle at 50% 30%, #fff, var(--bg-2) 75%); }
-.scn--ready { padding: 0; background: #000; }
-.scn__img { position: absolute; inset: 0; width: 100%; height: 100%; object-fit: cover; }
-.scn__note { position: absolute; left: 16px; bottom: 16px; display: flex; gap: 10px; align-items: center; padding: 8px 12px; border-radius: 12px; }
-.scn__pending { max-width: 560px; width: 100%; padding: var(--s6); display: grid; gap: 12px; justify-items: start; }
-.scn__scenes { width: 100%; display: grid; gap: 4px; }
-.scn__status { width: 100%; display: grid; gap: 6px; font: var(--t-caption); }
-.scn__status div { display: flex; gap: 10px; }
-.scn__status dt { width: 72px; color: var(--ink-2); flex: none; }

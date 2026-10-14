@@ -38,7 +38,6 @@ const P = {
   cube: <><path d="m12 2.8 8 4.6v9.2l-8 4.6-8-4.6V7.4l8-4.6z" /><path d="m4 7.4 8 4.6 8-4.6M12 12v9.2" /></>,
   satellite: <><path d="m13 7 4 4M7.5 8.5l3-3 3 3-3 3zM13.5 14.5l3-3 3 3-3 3zM10.5 11.5l3 3" /><path d="M4 20a6 6 0 0 0 6-6" /></>,
   map: <><path d="m9 4-5.5 2v14L9 18l6 2 5.5-2V4L15 6 9 4z" /><path d="M9 4v14M15 6v14" /></>,
-  street: <><path d="M6 21 10 3M18 21 14 3M12 6v2M12 11v2M12 16v2" /></>,
   rotate: <><path d="M20 11a8 8 0 1 0-2.3 5.7" /><path d="M20 4v7h-7" /></>,
   tilt: <><path d="M4 18h16M6.5 18 12 6l5.5 12" /></>,
   expand: <path d="M4 9V4h5M20 9V4h-5M4 15v5h5M20 15v5h-5" />,
