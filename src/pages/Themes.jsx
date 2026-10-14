@@ -3,7 +3,7 @@ import { Link, useSearchParams } from "react-router-dom";
 import MapView from "../map/MapView.jsx";
 import Icon from "../components/Icon.jsx";
 import { Notice, StatusBadge, Truth, fmtDate } from "../components/ui.jsx";
-import { CAMERA, COPY, DECISION, PROJECT, SAMPLE_COMMENTS, SOURCES, SURVEY, THEMES, THEME_BY_ID, cap, optName } from "../data/featured.js";
+import { CAMERA, COPY, DECISION, PROJECT, SAMPLE_COMMENTS, SOURCES, SURVEY, THEMES, THEME_BY_ID, cap, optName, surveyCount } from "../data/featured.js";
 import { useMapMode } from "../lib/useMapMode.js";
 import { prefersReducedMotion } from "../lib/motion.js";
 import { THEME_STATUS, TOTAL_COMMENTS, fitCamera } from "./outcomes-shared.js";
@@ -73,7 +73,7 @@ export default function Themes() {
             <p className="t-body t-muted measure">{COPY.themesSource} The comments on the map are samples written for this demo. Select a theme to see where they were placed and what {PROJECT.agency} did about it.</p>
           </div>
           <Notice tone="warning" icon="alert">
-            <strong>These counts aren't a poll.</strong> They count {TOTAL_COMMENTS} sample comments, not real ones. For what the {SURVEY.total.toLocaleString("en-US")} real {COPY.round} respondents preferred, see <Link className="link" to="../decision">the decision summary</Link>.
+            <strong>These counts aren't a poll.</strong> They count {TOTAL_COMMENTS} sample comments, not real ones. For what the {surveyCount()} real {COPY.round} respondents preferred, see <Link className="link" to="../decision">the decision summary</Link>.
           </Notice>
         </header>
 

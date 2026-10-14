@@ -3,16 +3,13 @@ import { Link } from "react-router-dom";
 import MapView from "../map/MapView.jsx";
 import CompareMap from "../map/CompareMap.jsx";
 import ModeSwitch from "../map/ModeSwitch.jsx";
-import { MODES } from "../map/engine.js";
 import Icon from "../components/Icon.jsx";
 import { Legend, LEGEND_PROPOSAL, Notice, Truth, fmtDate } from "../components/ui.jsx";
-import { OPTIONS, OPTION_BY_ID, SAMPLE_COMMENTS, THEME_BY_ID, CAMERA, COPY, DECISION, LEGEND, PROJECT, SOURCES, cap, optName, optTag } from "../data/featured.js";
+import { OPTIONS, OPTION_BY_ID, SAMPLE_COMMENTS, THEME_BY_ID, CAMERA, COPY, DECISION, LEGEND, PROJECT, SOURCES, cap, optName, optTag, optTagLong } from "../data/featured.js";
 import { useMapMode, useParam } from "../lib/useMapMode.js";
 import { MATRIX, PROJECT_BASE, useMedia } from "./proposal-lib.js";
 import "./proposal.css";
 
-// No matched street-level renders exist for these projects, so side by side offers map views only.
-const COMPARE_MODES = MODES.filter((m) => m.id !== "street");
 const idList = () => { const ids = OPTIONS.map((o) => o.id); return `${ids.slice(0, -1).join(", ")} and ${ids.at(-1)}`; };
 
 // R06 · Alternatives — every option the agency drew, on one map with one camera. Switching only swaps the proposal layer.
@@ -30,7 +27,6 @@ export default function Alternatives() {
   const side = layout === "side";
   const L = OPTION_BY_ID[leftId] || OPTION_BY_ID[OTHER];
   const R = OPTION_BY_ID[rightId] || OPTION_BY_ID[DECISION.chosen];
-  const sideMode = mode === "street" ? "map" : mode;
 
   const comments = useMemo(() => SAMPLE_COMMENTS.filter((c) => c.option === option.id), [option.id]);
   const markers = useMemo(() => comments.map((c) => ({
@@ -132,13 +128,13 @@ export default function Alternatives() {
         {side ? (
           <CompareMap
             key="side"
-            left={{ label: `${optTag(L.id)} · ${L.short}`, proposal: L.geojson }}
-            right={{ label: `${optTag(R.id)} · ${R.short}`, proposal: R.geojson }}
-            mode={sideMode}
+            left={{ label: optTagLong(L.id), proposal: L.geojson }}
+            right={{ label: optTagLong(R.id), proposal: R.geojson }}
+            mode={mode}
             initialCamera={CAMERA.home}
             label={`Compare ${optName(L.id)} and ${optName(R.id)}`}
           >
-            <div className="mv__top"><ModeSwitch value={sideMode} onChange={setMode} modes={COMPARE_MODES} /></div>
+            <div className="mv__top"><ModeSwitch value={mode} onChange={setMode} /></div>
             <Toolbar side={side} setLayout={setLayout} option={option} choose={choose} L={L} R={R} setLeftId={setLeftId} setRightId={setRightId} />
           </CompareMap>
         ) : (
@@ -153,7 +149,6 @@ export default function Alternatives() {
             onMarkerClick={onMarker}
             legend={<Legend items={LEGEND || LEGEND_PROPOSAL} />}
             hud={false}
-            streetContext={`Today, as photographed. There are no street-level renders of the ${COPY.alts}.`}
           >
             <p className="sr-only" aria-live="polite">Showing {optName(option.id)} on the map.</p>
             <Toolbar side={side} setLayout={setLayout} option={option} choose={choose} L={L} R={R} setLeftId={setLeftId} setRightId={setRightId} />
@@ -191,7 +186,7 @@ function Toolbar({ side, setLayout, option, choose, L, R, setLeftId, setRightId 
         <div className="seg alt-pg__seg" role="radiogroup" aria-label={`${COPY.alt} on the map`}>
           {OPTIONS.map((o) => (
             <button key={o.id} type="button" role="radio" aria-checked={o.id === option.id} className="seg__btn" onClick={() => choose(o.id)}>
-              <span className="alt-pg__long">{COPY.altShort} </span>{o.id}
+              {COPY.tagIsShort ? optTag(o.id) : <><span className="alt-pg__long">{COPY.altShort} </span>{o.id}</>}
             </button>
           ))}
         </div>

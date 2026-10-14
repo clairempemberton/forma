@@ -3,7 +3,7 @@ import StaffShell from "../components/StaffShell.jsx";
 import MapView from "../map/MapView.jsx";
 import Icon from "../components/Icon.jsx";
 import { Truth, Empty, fmtDate } from "../components/ui.jsx";
-import { CAMERA, F, optTag } from "../data/featured.js";
+import { CAMERA, F, optTag, optTagLong } from "../data/featured.js";
 import { circle } from "../lib/geo.js";
 import { setTriage } from "../lib/store.js";
 import { useParam } from "../lib/useMapMode.js";
@@ -146,7 +146,7 @@ export default function StaffTriage() {
           <label className="st-filter"><span className="sf-label">Alternative</span>
             <select className="select sf-select" value={option} onChange={(e) => setOption(e.target.value)}>
               <option value="all">Any alternative</option>
-              {OPTIONS.map((o) => <option key={o.id} value={o.id}>{optTag(o.id)} · {o.short}</option>)}
+              {OPTIONS.map((o) => <option key={o.id} value={o.id}>{optTagLong(o.id)}</option>)}
               <option value="none">No alternative named</option>
             </select>
           </label>

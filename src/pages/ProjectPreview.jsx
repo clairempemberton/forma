@@ -3,7 +3,7 @@ import { Link, useParams } from "react-router-dom";
 import MapView from "../map/MapView.jsx";
 import Icon from "../components/Icon.jsx";
 import { StatusBadge, Truth } from "../components/ui.jsx";
-import { projectById } from "../data/projects.js";
+import { PROJECTS, projectById } from "../data/projects.js";
 import { formatCoord } from "../lib/geo.js";
 import { useMapMode } from "../lib/useMapMode.js";
 import NotFound from "./NotFound.jsx";
@@ -25,7 +25,7 @@ export default function ProjectPreview() {
       </NotFound>
     );
   }
-  const live = projectById("hawthorne");
+  const live = PROJECTS.filter((x) => x.live);
 
   return (
     <>
@@ -65,11 +65,13 @@ export default function ProjectPreview() {
             </p>
 
             <div className="pv-notice" role="note">
-              <div className="pv-notice__thumb"><PlanThumb id={live.id} /></div>
+              <div className="pv-notice__thumb"><PlanThumb id={live[0].id} /></div>
               <div className="pv-notice__body">
-                <p className="pv-notice__title"><Icon name="info" />This project is a preview in Forma. Only SE Hawthorne is fully built.</p>
-                <p className="t-compact t-muted">Forma shows only the official facts here. SE Hawthorne has the full story: a live map, PBOT's four alternatives, a guided tour and the published decision.</p>
-                <Link to={`/projects/${live.id}`} className="btn btn--accent btn--sm">Open SE Hawthorne<Icon name="arrowRight" /></Link>
+                <p className="pv-notice__title"><Icon name="info" />This project is a preview in Forma.</p>
+                <p className="t-compact t-muted">Forma builds out a project only when the agency published its options, what people said and a decision. Here you get the official facts. These have the full story: a live map, the options people rated, a guided tour and the decision.</p>
+                <div className="row" style={{ flexWrap: "wrap", gap: 8 }}>
+                  {live.map((x) => <Link key={x.id} to={`/projects/${x.id}`} className="btn btn--accent btn--sm">Open {x.title}<Icon name="arrowRight" /></Link>)}
+                </div>
               </div>
             </div>
             <Link to="/" className="link"><Icon name="arrowLeft" />Back to all projects</Link>
@@ -89,8 +91,6 @@ export default function ProjectPreview() {
               clusterKinds={[]}
               hud={false}
               ariaLabel={`Map around ${p.title}, ${p.area}, Portland`}
-              streetTarget={p.lngLat}
-              streetContext="Street-level photos near this location. They may predate the project."
             >
               <span className="pv-map__truth glass"><Truth kind="osm">Approximate location · OpenStreetMap</Truth></span>
             </MapView>

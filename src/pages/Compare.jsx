@@ -2,24 +2,20 @@ import { useEffect, useId, useMemo, useRef, useState } from "react";
 import { Link } from "react-router-dom";
 import CompareMap from "../map/CompareMap.jsx";
 import ModeSwitch from "../map/ModeSwitch.jsx";
-import { MODES } from "../map/engine.js";
 import Icon from "../components/Icon.jsx";
 import { Notice, Steps, Truth } from "../components/ui.jsx";
-import { OPTIONS, OPTION_BY_ID, DECISION, CAMERA, COPY, PROJECT, countWord, optName, optTag } from "../data/featured.js";
+import { OPTIONS, OPTION_BY_ID, DECISION, CAMERA, COPY, PROJECT, countWord, optName, optTag, optTagLong } from "../data/featured.js";
 import { useMapMode, useParam } from "../lib/useMapMode.js";
 import { useReducedMotion, useIsMobile } from "../lib/motion.js";
 import { NOTICE, PROJECT_BASE, noticeLngLat, wordsFor } from "./proposal-lib.js";
 import "./proposal.css";
 
 // CAMERA.compare frames the whole project area, so every numbered change is in view.
-// No matched street-level renders exist for these projects, so the compare offers map views only.
-const COMPARE_MODES = MODES.filter((m) => m.id !== "street");
 
 // R05 · Before–after slider — step 2 of the guided walkthrough.
 // Same street, same camera, same base map: only the proposal layer differs between the sides.
 export default function Compare() {
-  const [viewMode, setMode] = useMapMode();
-  const mode = viewMode === "street" ? "map" : viewMode;
+  const [mode, setMode] = useMapMode();
   const [optParam, setOptParam] = useParam("option", DECISION.chosen);
   const option = OPTION_BY_ID[optParam] || OPTION_BY_ID[DECISION.chosen];
   const [pos, setPos] = useState(50);
@@ -63,7 +59,7 @@ export default function Compare() {
   const userPos = (v) => { touched.current = true; setPos(v); };
 
   const today = { label: "Today", proposal: null };
-  const proposed = { label: `${optTag(option.id)} · ${option.short}`, proposal: option.geojson };
+  const proposed = { label: optTagLong(option.id), proposal: option.geojson };
   const markers = notices.map((n, i) => ({
     id: `n${i}`, kind: "change", index: i + 1, lngLat: noticeLngLat(n), label: n.title, selected: active === i,
     ariaLabel: `${i + 1}. ${n.title}`,
@@ -172,7 +168,7 @@ export default function Compare() {
           onPosition={userPos}
           label={`Compare ${left.label} and ${right.label}`}
         >
-          <div className="mv__top"><ModeSwitch value={mode} onChange={setMode} modes={COMPARE_MODES} /></div>
+          <div className="mv__top"><ModeSwitch value={mode} onChange={setMode} /></div>
           {words && !mobile && (
             <section id={wordsId} className="cmp-pg__words panel-float" aria-labelledby={`${wordsId}-h`}>
               <div className="row" style={{ justifyContent: "space-between", alignItems: "flex-start" }}>
@@ -195,7 +191,7 @@ export default function Compare() {
               {OPTIONS.map((o) => (
                 <button key={o.id} type="button" role="radio" aria-checked={o.id === option.id} className="seg__btn"
                   onClick={() => { setOptParam(o.id); if (active != null) { setActive(null); setCamera({ ...home }); } }}>
-                  <span className="cmp-pg__opt-long">{COPY.altShort} </span>{o.id}
+                  {COPY.tagIsShort ? optTag(o.id) : <><span className="cmp-pg__opt-long">{COPY.altShort} </span>{o.id}</>}
                 </button>
               ))}
             </div>

@@ -5,7 +5,7 @@ import Icon from "../components/Icon.jsx";
 import { Legend, LEGEND_PROPOSAL, StatusBadge, Truth, fmtDate } from "../components/ui.jsx";
 import {
   CAMERA, COPY, DECISION, LEGEND, EXISTING_FEATURES, F, OPTIONS, OPTION_BY_ID, PLACE, PROJECT, STORY, SURVEY, THEMES, THEME_BY_ID, TIMELINE, SAMPLE_COMMENTS,
-  TOTAL_COMMENTS, cap, optName,
+  TOTAL_COMMENTS, cap, optName, surveyCount,
 } from "../data/featured.js";
 import { centroid, point } from "../lib/geo.js";
 import { useMapMode, useParam } from "../lib/useMapMode.js";
@@ -154,7 +154,7 @@ export default function Overview() {
               <div><dt>Led by</dt><dd>{PROJECT.team}</dd></div>
               <div><dt>Stage</dt><dd>{PROJECT.status}<span className="t-caption t-muted">This page: {PROJECT.round.toLowerCase()}</span></dd></div>
               <div><dt>Budget</dt><dd>{PROJECT.budget}</dd></div>
-              <div><dt>{cap(COPY.round)}</dt><dd><span><span className="t-num">{SURVEY.total.toLocaleString("en-US")}</span> people rated {OPTIONS.length} {COPY.alts}</span></dd></div>
+              <div><dt>{cap(COPY.round)}</dt><dd><span>{SURVEY.glance ?? <><span className="t-num">{surveyCount()}</span> people rated {OPTIONS.length} {COPY.alts}</>}</span></dd></div>
             </dl>
             <Link to="decision" className="ov-facts__link"><span><strong>Decision · {decided}</strong><span className="t-caption t-muted">A refined {optName(DECISION.chosen)}</span></span><Icon name="chevronRight" /></Link>
           </aside>
@@ -184,8 +184,6 @@ export default function Overview() {
                   map.once("remove", () => window.removeEventListener("resize", pad));
                 }}
                 legend={<Legend items={LEGEND || LEGEND_PROPOSAL} />}
-                streetTarget={step?.camera.center}
-                streetContext={COPY.streetContext}
               >
                 <div className="ov-showing glass" aria-live="polite">
                   <span className={`ov-showing__dot ${showProposal ? "is-on" : ""}`} aria-hidden="true" />

@@ -3,7 +3,7 @@ import { Link } from "react-router-dom";
 import MapView from "../map/MapView.jsx";
 import Icon from "../components/Icon.jsx";
 import { Legend, LEGEND_PROPOSAL, Notice, StatusBadge, Truth, fmtDate } from "../components/ui.jsx";
-import { CAMERA, COPY, DECISION, LEGEND, OPTION_BY_ID, PLACE, PROJECT, REVISION_CHANGES, SOURCES, SURVEY, THEMES, THEME_BY_ID, TIMELINE, VERSIONS, cap, optName } from "../data/featured.js";
+import { CAMERA, COPY, DECISION, LEGEND, OPTION_BY_ID, PLACE, PROJECT, REVISION_CHANGES, SOURCES, SURVEY, THEMES, THEME_BY_ID, TIMELINE, VERSIONS, cap, optName, surveyCount } from "../data/featured.js";
 import { useMapMode } from "../lib/useMapMode.js";
 import { CHANGE_STATUS, THEME_STATUS, TOTAL_COMMENTS } from "./outcomes-shared.js";
 import "./outcomes.css";
@@ -96,7 +96,7 @@ export default function Decision() {
 
           <dl className="dcs__stats">
             <div className="dcs__stat"><dt>Chosen</dt><dd>{optName(OPTION.id)} · {OPTION.name}</dd></div>
-            <div className="dcs__stat"><dt>Rated in {COPY.round}</dt><dd><span className="t-num">{SURVEY.total.toLocaleString("en-US")}</span> <span className="dcs__of">people</span></dd></div>
+            <div className="dcs__stat"><dt>Rated in {COPY.round}</dt><dd><span className="t-num">{surveyCount()}</span> <span className="dcs__of">people</span></dd></div>
             <div className="dcs__stat"><dt>Requests acted on after {COPY.round}</dt><dd><span className="t-num">{MADE.length}</span> <span className="dcs__of">of {REVISION_CHANGES.length}</span></dd></div>
             <div className="dcs__stat"><dt>Budget</dt><dd>{PROJECT.budget}</dd></div>
           </dl>

@@ -7,6 +7,7 @@ import { writeFile } from "node:fs/promises";
 const AREAS = {
   hawthorne: { lat: 45.51205, lon: -122.6252, radius: 300, file: "osm-existing.json" },
   "creston-skatepark": { lat: 45.49671, lon: -122.61536, radius: 260, file: "osm-creston-skatepark.json" },
+  "82nd-ave-fx": { lat: 45.5187, lon: -122.57908, radius: 320, file: "osm-82nd-ave-fx.json" },
 };
 const id = process.argv[2] || "hawthorne";
 const area = AREAS[id];

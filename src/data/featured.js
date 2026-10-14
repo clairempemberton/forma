@@ -6,10 +6,14 @@ import * as hawthorne from "./hawthorne.js";
 
 const LOADERS = {
   hawthorne: async () => hawthorne,
+  "creston-skatepark": () => import("./creston-skatepark.js"),
+  "82nd-ave-fx": () => import("./82nd-ave-fx.js"),
 };
 // Short names for switchers on screens outside a project (/me, /staff).
 export const FULL_PROJECTS = [
   { id: "hawthorne", short: "SE Hawthorne" },
+  { id: "creston-skatepark", short: "Creston Skatepark" },
+  { id: "82nd-ave-fx", short: "82nd Ave FX" },
 ];
 export const FULL_PROJECT_IDS = Object.keys(LOADERS);
 export const isFullProject = (id) => id in LOADERS;
@@ -44,9 +48,14 @@ export async function loadProject(id) {
 // "Alternative 2" / "Alt 2" on Hawthorne, "Option D" on Creston: each project names options its own way.
 const WORDS = ["zero", "one", "two", "three", "four", "five", "six", "seven", "eight", "nine", "ten"];
 export const countWord = (n) => WORDS[n] ?? String(n);
+// "1,002", or a label such as "1,500+" when the agency reported a rounded count.
+export const surveyCount = () => SURVEY.totalLabel ?? SURVEY.total.toLocaleString("en-US");
 export const cap = (s) => s.charAt(0).toUpperCase() + s.slice(1);
 export const optName = (id) => `${COPY.alt} ${id}`;
-export const optTag = (id) => `${COPY.altShort} ${id}`;
+// Projects with long option words (TriMet's "Scenario") tag options by their short name instead: "More BAT".
+export const optTag = (id) => (COPY.tagIsShort ? OPTION_BY_ID[id]?.short ?? id : `${COPY.altShort} ${id}`);
+// "Alt 2 · Center turn lane", or just "More BAT" when the tag already is the short name.
+export const optTagLong = (id) => (COPY.tagIsShort ? optTag(id) : `${optTag(id)} · ${OPTION_BY_ID[id]?.short}`);
 
 // For screens outside a project's routes (/me, /staff): re-render when the active project changes.
 export function useActiveProjectId() {

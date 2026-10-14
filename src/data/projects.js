@@ -1,7 +1,7 @@
 // Project directory: real Portland projects. Facts are taken from each project's official page
 // (checked October 2026); `url` is the source. Locations are approximate, from OpenStreetMap.
 // Forma is an unofficial concept, not affiliated with the City of Portland, PBOT, PP&R or TriMet.
-import { PROJECT } from "./featured.js";
+import { PROJECT } from "./hawthorne.js";
 
 export const STAGES = [
   { status: "Exploring", tone: "info", title: "Early ideas", body: "Nothing is drawn yet" },
@@ -98,6 +98,7 @@ export const PROJECTS = [
     dates: "Completion expected fall 2026",
     facts: ["$5 million from Parks System Development Charges", "10,000 sq ft covered building", "669 responses in the first survey"],
     url: "https://www.portland.gov/parks/construction/creston-park-skatepark-project",
+    live: true,
   },
   {
     id: "westmoreland-courts",
@@ -122,8 +123,9 @@ export const PROJECTS = [
     summary: "Upgrading Line 72 on 82nd Avenue to FX Frequent Express between Cully and Clackamas Town Center.",
     lngLat: [-122.57909, 45.50502],
     dates: "Service expected 2029",
-    facts: ["About $350 million, $150 million federal", "Seven miles of bus-and-turn lanes each way", "Line 72: about 66,000 rides a week"],
+    facts: ["About $346 million, $150 million sought from federal Small Starts", "About seven miles of bus-and-turn lanes each way", "Line 72: about 10,000 daily trips"],
     url: "https://trimet.org/82nd/",
+    live: true,
   },
 ].map((p) => ({ ...p, statusTone: TONE[p.status] || "neutral", truth: "source" }));
 
