@@ -1,0 +1,21 @@
+{
+  "id": "alder-8th-sw-corner",
+  "project": "alder-8th",
+  "title": "Southwest corner curb ramp, looking northeast",
+  "version": 1,
+  "camera": {
+    "lngLat": [-122.65780, 45.51786],
+    "heightMeters": 1.2,
+    "headingDegrees": 45,
+    "pitchDegrees": -6,
+    "fovDegrees": 62,
+    "note": "Seated eye height, for the wheelchair-user perspective raised in comments."
+  },
+  "environment": { "timeOfDay": "10:30", "season": "autumn", "sky": "overcast", "sunAzimuthDegrees": 150 },
+  "variants": {
+    "existing": { "status": "pending", "src": "../existing/alder-8th-sw-corner.webp", "classification": "simulated", "basis": "Blender reconstruction from OpenStreetMap geometry", "attribution": "Geometry © OpenStreetMap contributors (ODbL)" },
+    "proposed": { "status": "pending", "src": "../proposed/alder-8th-sw-corner.option-c-v2.webp", "option": "C", "proposalVersion": "v2", "classification": "simulated", "basis": "Same scene and camera; directional ramps from version 2", "attribution": "Illustrative render" }
+  },
+  "alternatives": [],
+  "consistency": ["Identical camera transform for every variant", "Only the proposal collection changes between renders"]
+}
