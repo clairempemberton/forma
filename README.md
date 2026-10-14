@@ -1,70 +1,71 @@
 # Forma
 
-A participatory urban design prototype: explore a proposed street change on a real corner,
-compare options, comment on the exact spot, and follow what happened to what you said.
+A concept for planning streets in the open: see what's changing on Portland's streets and parks,
+compare a project's alternatives on the real street, comment on the exact spot, and follow what
+happened to what people said.
 
-**The place is real; the project is not.** The streets are SE Alder St & SE 8th Ave in Portland's
-Central Eastside (Buckman), taken from OpenStreetMap. The project, its options, the comments, the
-themes, the staff and every outcome are fictional and labelled that way in the interface.
+**Live demo:** https://clairempemberton.github.io/forma/
+
+> Unofficial concept. Not affiliated with the City of Portland, PBOT, Portland Parks & Recreation or
+> TriMet. Project facts are cited to their official pages; resident comments are samples.
+
+## What's real
+
+- **The projects.** Nine current and recent Portland projects with their real stage, figures and a
+  link to the official page (`src/data/projects.js`).
+- **SE Hawthorne Pave & Paint**, the fully built project. PBOT's four 2020 alternatives are drawn on
+  the real street between SE 35th Pl and César E. Chávez Blvd from the lane and island widths in the
+  [Decision Report](https://www.portland.gov/sites/default/files/2021/hawthorne-pave-and-paint-decision-final.pdf).
+  The round 2 survey (1,002 respondents), the decision and its reasons, the timeline and the
+  before/after results from the
+  [Evaluation Report](https://www.portland.gov/transportation/vision-zero/documents/se-hawthorne-boulevard-projects-evaluation-report-2023-updated)
+  are cited in `src/data/hawthorne.js`.
+- **Existing conditions** come from OpenStreetMap (`src/data/osm-existing.json`, refresh with `npm run osm`).
+
+## What's sample
+
+Individual resident comments, the staff triage queue and anything you submit. The commenting flow is a
+replay of round 2 (September–November 2020). There is no server: drafts and comments stay in your
+browser's local storage.
 
 ## Run it
 
 ```bash
 npm install
-npm run dev           # http://localhost:5191
-npm run build         # writes the static build to dist/
-npm test              # unit tests (geometry, clustering)
+npm run dev        # http://localhost:5191
+npm test           # search, geocoding, geometry and project data
+npm run build      # static build in dist/
+npm run mockups    # portfolio screenshots in mockups/ (raw and device-framed)
 ```
 
-Routes use the hash (`/forma/#/projects/alder-8th/compare`), so any static host works without rewrites.
+Routes use the hash (`#/projects/hawthorne/compare`), so any static host works without rewrites.
 
-## Map providers
+## Map tokens
 
-| View | With tokens | Without tokens |
-| --- | --- | --- |
-| Map | Mapbox Standard, default (color) theme | MapLibre + OpenFreeMap Liberty (OSM data, no key) |
-| Satellite | Mapbox Standard Satellite (licensed imagery) | Labelled setup state; no substitute imagery |
-| 3D | Mapbox Standard with 3D buildings, terrain, lighting | MapLibre with OSM building heights extruded |
-| Street | Mapillary photos nearest the spot (≤ 60 m) | Labelled setup state + link to Mapillary |
-
-### Tokens
-
-Create `.env.local` in this folder (it is gitignored):
+Optional. Create `.env.local` (gitignored):
 
 ```
 VITE_MAPBOX_ACCESS_TOKEN=pk.your-public-token
 VITE_MAPILLARY_ACCESS_TOKEN=MLY|your-client-token
 ```
 
-- **Mapbox:** account.mapbox.com → Tokens → create a *public* token (`pk.`) with the default
-  public scopes. Add URL restrictions for your domains (e.g. `https://yourdomain.com/forma/*` and
-  `http://localhost:5191/*`). Never use a secret `sk.` token here.
-- **Mapillary:** mapillary.com/dashboard/developers → register an application → copy the *client
-  token*. Imagery is CC BY-SA 4.0; Forma credits each photo's creator under the viewer.
+| View | With tokens | Without |
+| --- | --- | --- |
+| Map | Mapbox Standard | MapLibre + OpenFreeMap Liberty |
+| Satellite | Mapbox Standard Satellite | Setup message |
+| 3D | Mapbox 3D buildings and terrain | MapLibre with OSM building heights |
+| Street | Mapillary photos within 60 m | Setup message |
 
-Vite inlines `VITE_*` values into the build, so a token used for `npm run build` ends up in `dist/`.
-That is expected for public tokens; rely on URL restrictions, and rebuild without the variables if
-you'd rather not publish one.
+Search falls back from project text to place lookup (Mapbox Geocoding, or Photon without a token).
+Use a URL-restricted public Mapbox token for anything you deploy: Vite inlines `VITE_*` values into the build.
 
-## Data
+## Deploy
 
-- `src/data/osm-existing.json` — real features within 260 m of the corner (sidewalks, crossings,
-  stop signs, trees, bus stops). Refresh with `npm run osm`. © OpenStreetMap contributors, ODbL.
-- `src/data/alder.js` — the fictional project: options A/B/C as GeoJSON authored in local metres on
-  the real street grid, versions, comments, themes, decision, timeline. Each fact is tagged
-  `osm`, `estimate` or `illustrative`.
-- Layers stay separate: `f-osm` (existing), `f-proposal` (selected option), DOM markers (comments,
-  features), `f-focus`/`f-mask` (spatial focus).
+`.github/workflows/pages.yml` builds and publishes to GitHub Pages on every push to `main`.
+Add `VITE_MAPBOX_ACCESS_TOKEN` and `VITE_MAPILLARY_ACCESS_TOKEN` as repository secrets, and set
+Pages → Source to "GitHub Actions".
 
-## Street-level renders
+## Data credits
 
-`public/urban-scenes/` holds the Blender pipeline: `metadata/*.json` fixes each scene's camera
-(location, eye height, heading, pitch, FOV) and environment; renders go in `existing/`, `proposed/`
-and `alternatives/` as 2400×1350 WebP. A comparison appears only when both sides of the same scene
-are `ready`; until then the Street view in Compare shows what's pending. Renders are always labelled
-"Simulated render".
-
-## What's simulated
-
-No server. Drafts, submitted comments, staff triage and "publish" live in this browser's
-localStorage (Reset demo clears them).
+Map data © OpenStreetMap contributors (ODbL). Street-level photos from Mapillary contributors (CC BY-SA 4.0).
+Project facts © their publishers, linked from each project.
