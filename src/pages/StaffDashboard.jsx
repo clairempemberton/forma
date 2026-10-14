@@ -4,9 +4,9 @@ import StaffShell from "../components/StaffShell.jsx";
 import MapView from "../map/MapView.jsx";
 import Icon from "../components/Icon.jsx";
 import { Truth, fmtDate } from "../components/ui.jsx";
-import { PROJECT, TIMELINE, CAMERA, EXISTING_FEATURES } from "../data/alder.js";
+import { DECISION, PROJECT, SURVEY, TIMELINE, CAMERA, EXISTING_FEATURES, PROJECT_BASE, COPY, cap, optName } from "../data/featured.js";
 import {
-  useStaffData, STAGES, currentStage, currentStep, daysUntil, weeklyCounts, moderationQueue, themeStats, publishChecks, metres,
+  useStaffData, stages, currentStage, currentStep, daysUntil, weeklyCounts, moderationQueue, themeStats, publishChecks, metres,
 } from "./staffData.js";
 import "./staff.css";
 
@@ -49,7 +49,7 @@ export default function StaffDashboard() {
     <StaffShell
       title={PROJECT.title}
       actions={<>
-        <Link className="btn btn--secondary" to="/projects/alder-8th"><Icon name="eye" />View public page</Link>
+        <Link className="btn btn--secondary" to={`${PROJECT_BASE}`}><Icon name="eye" />View public page</Link>
         <Link className="btn btn--primary" to="/staff/triage"><Icon name="inbox" />Open feedback</Link>
       </>}
     >
@@ -58,7 +58,7 @@ export default function StaffDashboard() {
         <section className="staff-card sd-card sf-span-5" aria-labelledby="sd-stage">
           <div className="sd-card__head"><h2 id="sd-stage">Stage</h2><span className="t-caption t-muted">{PROJECT.round}</span></div>
           <ol className="sd-stages" aria-label="Project stages">
-            {STAGES.map((s, i) => (
+            {stages().map((s, i) => (
               <li key={s} data-state={i < stage ? "done" : i === stage ? "current" : "todo"} aria-current={i === stage ? "step" : undefined}>
                 <span className="sd-stages__bar" aria-hidden="true" />
                 <span className="sd-stages__label">{s}</span>
@@ -66,17 +66,17 @@ export default function StaffDashboard() {
             ))}
           </ol>
           <p className="t-compact">
-            {step ? <>{step.title} on <strong>{fmtDate(step.date, { month: "short", day: "numeric" })}</strong>. </> : null}
-            The public page says comments are open until {fmtDate(PROJECT.closes, { month: "long", day: "numeric" })}.
+            {step ? <>{step.title} in <strong>{fmtDate(step.date, { month: "short", year: "numeric" })}</strong>. </> : null}
+            This workspace replays {COPY.round} ({SURVEY.window}) with sample comments. The real project is {PROJECT.status.toLowerCase()}.
           </p>
-          <Link className="link t-compact" to="/staff/revisions">Review version 2 changes<Icon name="arrowRight" /></Link>
+          <Link className="link t-compact" to="/staff/revisions">Review the refinements to {optName(DECISION.chosen)}<Icon name="arrowRight" /></Link>
         </section>
 
         {/* Next deadline */}
         <section className="staff-card sd-card sf-span-3" aria-labelledby="sd-deadline">
           <div className="sd-card__head"><h2 id="sd-deadline">Next deadline</h2></div>
           <p className="sd-big t-num">{days > 0 ? <>{days} <span>day{days === 1 ? "" : "s"}</span></> : days === 0 ? "Today" : "Closed"}</p>
-          <p className="t-compact t-muted">Round 2 closes {fmtDate(PROJECT.closes, { weekday: "short", month: "short", day: "numeric" })}, counted from today.</p>
+          <p className="t-compact t-muted">{cap(COPY.round)} {days >= 0 ? "closes" : "closed"} {fmtDate(PROJECT.closes, { month: "short", day: "numeric", year: "numeric" })}. In this replay, triage stays open.</p>
           <div className="sd-progress" role="img" aria-label={`${Math.round(elapsed * 100)}% of the comment period has passed`}><span style={{ width: `${elapsed * 100}%` }} /></div>
           <p className="t-caption t-muted">{themes.length - unanswered.length} of {themes.length} themes have a draft response</p>
         </section>

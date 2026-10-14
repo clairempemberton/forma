@@ -227,7 +227,7 @@
   .dcs__aside, .dcs__section-head .link, .dcs__docs li:last-child { display: none !important; }
   .dcs__layout { display: block; padding: 0; max-width: none; }
   .dcs__doc { gap: 24px; }
-  .dcs__banner { border: 1px solid #c9a46a; border-radius: 8px; margin-bottom: 20px; }
+  .dcs__banner { border: 1px solid #9ca3af; border-radius: 8px; margin-bottom: 20px; }
   .dcs__map-frame, .dcs__map-cap > span:first-child { display: none; }
   .dcs__map-print { display: grid; gap: 4px; padding-left: 18px; list-style: disc; font: var(--t-compact); }
   .dcs__section, .dcs__why > li, .dcs__table tr, .card { break-inside: avoid; }

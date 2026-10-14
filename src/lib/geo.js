@@ -39,7 +39,7 @@ export function point(frame, xy, properties = {}) {
   return { type: "Feature", properties, geometry: { type: "Point", coordinates: frame.toLngLat(xy) } };
 }
 
-export const collection = (features) => ({ type: "FeatureCollection", features: features.flat().filter(Boolean) });
+export const collection = (features) => ({ type: "FeatureCollection", features: features.flat(Infinity).filter(Boolean) });
 
 // Mirror an L-shaped corner polygon into each quadrant: sx, sy are ±1.
 export function mirror(points, sx, sy) {

@@ -2,9 +2,10 @@ import { useEffect, useRef, useState } from "react";
 import { Link } from "react-router-dom";
 import Icon from "../components/Icon.jsx";
 import { Empty, StatusBadge, Truth, fmtDate } from "../components/ui.jsx";
-import { PROJECT, REVISION_CHANGES, THEME_BY_ID } from "../data/alder.js";
-import { resetDemo, setState, useStore } from "../lib/store.js";
-import { PROJECT_BASE, Switch, THEME_ICON, describePlace, optionLabel, themeName, trackComment } from "./participate-shared.jsx";
+import { DECISION, PROJECT, REVISION_CHANGES, THEME_BY_ID, COPY, optName } from "../data/featured.js";
+import { resetDemo, setState, useAllMine, useStore } from "../lib/store.js";
+import { PROJECT_BASE, Switch, themeIcon, describePlace, optionLabel, themeName, trackComment } from "./participate-shared.jsx";
+import ProjectSwitch from "../components/ProjectSwitch.jsx";
 import "./participate.css";
 
 const SHORT_STEPS = { received: "Sent", read: "Read", grouped: "Joined a theme", answered: "Answered" };
@@ -12,6 +13,8 @@ const SHORT_STEPS = { received: "Sent", read: "Read", grouped: "Joined a theme",
 // R14 · My contributions — tracking. Route /me.
 export default function MyContributions() {
   const mine = useStore((s) => s.mine);
+  const all = useAllMine();
+  const counts = all.reduce((o, c) => ({ ...o, [c.project]: (o[c.project] || 0) + 1 }), {});
   const triage = useStore((s) => s.triage);
   const published = useStore((s) => s.published);
   const draft = useStore((s) => s.draft);
@@ -37,13 +40,15 @@ export default function MyContributions() {
             <p className="t-compact t-muted">No account needed. Forma keeps these on this device only — another browser, or clearing site data, won't show them.</p>
           </div>
 
+          <ProjectSwitch label="Comments on" counts={counts} />
+
           <Link to={PROJECT_BASE} className="card card--interactive pt-me__project">
             <div className="row" style={{ justifyContent: "space-between" }}>
               <StatusBadge tone={PROJECT.statusTone}>{PROJECT.status}</StatusBadge>
               <span className="t-caption t-muted">{PROJECT.round}</span>
             </div>
             <p className="pt-method__title">{PROJECT.title}</p>
-            <p className="t-caption t-muted">{PROJECT.place.name} · comments close {fmtDate(PROJECT.closes, { month: "short", day: "numeric" })}</p>
+            <p className="t-caption t-muted">{PROJECT.place.name} · {COPY.round} closed {fmtDate(PROJECT.closes, { month: "short", year: "numeric" })}</p>
           </Link>
 
           <div className="card pt-follow">
@@ -93,7 +98,7 @@ export default function MyContributions() {
               <ul className="stack" style={{ "--stack": "14px" }}>
                 {mine.map((c) => <CommentTrack key={c.id} c={c} track={trackComment(c, triage, published)} />)}
               </ul>
-              <p className="t-caption t-muted pt-note"><Icon name="info" />Your comment is one of many that shape each theme. Forma never claims a single comment caused a change. Statuses and responses are part of the fictional demo.</p>
+              <p className="t-caption t-muted pt-note"><Icon name="info" />Your comment is one of many that shape each theme. Forma never claims a single comment caused a change. Statuses are simulated in this browser; theme responses are PBOT's published answers.</p>
             </>
           )}
         </section>
@@ -110,7 +115,7 @@ function CommentTrack({ c, track }) {
     <li className="card pt-track">
       <div className="pt-track__top">
         <span className="fid fid--line">{c.ref}</span>
-        <span className="badge badge--voice">{theme && <Icon name={THEME_ICON[theme.id]} />}{themeName(track.theme)}</span>
+        <span className="badge badge--voice">{theme && <Icon name={themeIcon(theme.id)} />}{themeName(track.theme)}</span>
         <span className="badge badge--outline badge--plain"><Icon name={c.public ? "eye" : "lock"} />{c.public ? `Public as ${c.author}` : "Team only"}</span>
         <span className="spacer" />
         <span className="t-caption t-muted"><time dateTime={c.date}>{fmtDate(c.date)}</time></span>
@@ -142,8 +147,8 @@ function CommentTrack({ c, track }) {
             <>
               <p className="t-compact">{theme.response}</p>
               <div className="row" style={{ flexWrap: "wrap", gap: "4px 14px" }}>
-                <Link className="link t-caption" to={change ? `${PROJECT_BASE}/revision` : `${PROJECT_BASE}/decision`}>{change ? "See what changed in version 2" : "Read the decision"}<Icon name="arrowRight" /></Link>
-                <Truth kind="illustrative">Round 1 response · fictional</Truth>
+                <Link className="link t-caption" to={change ? `${PROJECT_BASE}/revision` : `${PROJECT_BASE}/decision`}>{change ? `How ${optName(DECISION.chosen)} was refined` : "Read the decision"}<Icon name="arrowRight" /></Link>
+                <Truth kind="source">{PROJECT.agency} response · {fmtDate(DECISION.date, { month: "short", year: "numeric" })}</Truth>
               </div>
             </>
           ) : (

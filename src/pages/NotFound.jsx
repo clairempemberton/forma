@@ -14,10 +14,10 @@ export function DeadEnd() {
       <rect x="-4" y="-4" width="120" height="54" rx="3" fill="#fff" stroke="#d6dbe2" />
       <rect x="128" y="-4" width="110" height="54" rx="3" fill="#fff" stroke="#d6dbe2" />
       <rect x="-4" y="110" width="240" height="54" rx="3" fill="#fff" stroke="#d6dbe2" />
-      <circle cx="320" cy="40" r="11" fill="#cfe6db" stroke="#7bb89f" />
-      <circle cx="326" cy="126" r="13" fill="#cfe6db" stroke="#7bb89f" />
-      <circle cx="262" cy="80" r="9" fill="#2b50f0" opacity="0.16" />
-      <circle cx="262" cy="80" r="4.5" fill="#2b50f0" stroke="#fff" strokeWidth="2" />
+      <circle cx="320" cy="40" r="11" fill="#d1fae0" stroke="#4ade80" />
+      <circle cx="326" cy="126" r="13" fill="#d1fae0" stroke="#4ade80" />
+      <circle cx="262" cy="80" r="9" fill="#15803d" opacity="0.16" />
+      <circle cx="262" cy="80" r="4.5" fill="#15803d" stroke="#fff" strokeWidth="2" />
     </svg>
   );
 }
@@ -31,10 +31,10 @@ export default function NotFound({ title = "This street doesn't go anywhere", ch
         <h1 className="t-h1">{title}</h1>
         <p className="t-body t-muted nf__lead">{children || "The link may be old, or the page may have moved. Projects and their maps are all reachable from the directory."}</p>
         <div className="nf__actions">
-          <Link to="/projects" className="btn btn--accent btn--lg">Explore projects<Icon name="arrowRight" /></Link>
+          <Link to="/" className="btn btn--accent btn--lg">Explore projects<Icon name="arrowRight" /></Link>
           <Link to="/" className="btn btn--secondary btn--lg">Go home</Link>
         </div>
-        <Link to="/projects/alder-8th" className="link nf__alt">Or open the Alder &amp; 8th demo project<Icon name="arrowRight" /></Link>
+        <Link to="/projects/hawthorne" className="link nf__alt">Open the SE Hawthorne project<Icon name="arrowRight" /></Link>
       </main>
       <SiteFooter />
     </>

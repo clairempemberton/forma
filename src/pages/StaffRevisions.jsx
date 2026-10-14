@@ -4,15 +4,16 @@ import StaffShell from "../components/StaffShell.jsx";
 import CompareMap from "../map/CompareMap.jsx";
 import Icon from "../components/Icon.jsx";
 import { Truth, fmtDate } from "../components/ui.jsx";
-import { VERSIONS, REVISION_CHANGES, THEMES, THEME_BY_ID, CAMERA } from "../data/alder.js";
+import { DECISION, VERSIONS, REVISION_CHANGES, THEMES, THEME_BY_ID, CAMERA, optName } from "../data/featured.js";
 import { useParam } from "../lib/useMapMode.js";
 import { useStaffData, evidenceFor, NEAR_M, DECISIONS, DECISION_BY_ID, setThemeDecision } from "./staffData.js";
 import "./staff.css";
 
 const [V1, V2] = VERSIONS;
-const MAP_STATUS = { changed: { label: "Changed in v2", cls: "badge--accent" }, "not-changed": { label: "Not changed", cls: "badge--outline" } };
+const MONTH = { month: "short", year: "numeric" };
+const MAP_STATUS = { changed: { label: `Changed in ${V2.label.toLowerCase()}`, cls: "badge--accent" }, "not-changed": { label: "Not changed", cls: "badge--outline" } };
 
-// R23 · Revision mapping: each change between v1 and v2, the themes and comments behind it,
+// R23 · Revision mapping: each refinement between the feedback round and the decision, the themes and comments behind it,
 // and the team's decision on every theme.
 export default function StaffRevisions() {
   const { comments, decisions } = useStaffData();
@@ -31,7 +32,7 @@ export default function StaffRevisions() {
 
   // Fly the compare view to the selected change (skipped on first render so the overview shows).
   const [camera, setCamera] = useState(null);
-  const pick = (id) => { setCid(id); const r = REVISION_CHANGES.find((x) => x.id === id); if (r) setCamera({ center: r.lngLat, zoom: 19.3, bearing: 0, pitch: 0 }); };
+  const pick = (id) => { setCid(id); const r = REVISION_CHANGES.find((x) => x.id === id); if (r) setCamera({ center: r.lngLat, zoom: 18.6, bearing: 0, pitch: 0 }); };
 
   const unlinked = THEMES.filter((t) => !REVISION_CHANGES.some((r) => r.themes.includes(t.id)));
   const idx = REVISION_CHANGES.indexOf(change);
@@ -39,10 +40,10 @@ export default function StaffRevisions() {
   return (
     <StaffShell title="Revisions" actions={<Truth kind="illustrative" />}>
       <div className="sr">
-        <nav className="staff-card sr-list" aria-label="Changes from version 1 to version 2">
+        <nav className="staff-card sr-list" aria-label={`Changes from the ${V1.label.toLowerCase()} version to the ${V2.label.toLowerCase()} version`}>
           <div>
             <h2 className="sf-sub">{V1.label} → {V2.label}</h2>
-            <p className="t-caption t-muted">{fmtDate(V1.date, { month: "short", day: "numeric" })} → {fmtDate(V2.date, { month: "short", day: "numeric" })} · Option C</p>
+            <p className="t-caption t-muted">{fmtDate(V1.date, MONTH)} → {fmtDate(V2.date, MONTH)} · {optName(DECISION.chosen)}</p>
           </div>
           <ol>
             {REVISION_CHANGES.map((r, i) => (
@@ -61,15 +62,15 @@ export default function StaffRevisions() {
 
         <div className="sf-mapbox sr-map">
           <CompareMap
-            left={{ label: `${V1.label} · ${fmtDate(V1.date, { month: "short", day: "numeric" })}`, proposal: V1.geojson, markers }}
-            right={{ label: `${V2.label} · ${fmtDate(V2.date, { month: "short", day: "numeric" })}`, proposal: V2.geojson }}
-            initialCamera={{ ...CAMERA.home, zoom: 18.3 }}
+            left={{ label: `${V1.label} · ${fmtDate(V1.date, MONTH)}`, proposal: V1.geojson, markers }}
+            right={{ label: `${V2.label} · ${fmtDate(V2.date, MONTH)}`, proposal: V2.geojson }}
+            initialCamera={CAMERA.home}
             position={pos}
             onPosition={setPos}
             markers={markers}
             onMarkerClick={(m) => { if (m.kind === "change") pick(m.id); }}
             camera={camera}
-            label="Compare version 1 and version 2"
+            label={`Compare the ${V1.label.toLowerCase()} and ${V2.label.toLowerCase()} versions`}
           />
         </div>
 

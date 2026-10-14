@@ -3,7 +3,7 @@ import MapView from "./MapView.jsx";
 import ModeSwitch from "./ModeSwitch.jsx";
 import MapControls from "./MapControls.jsx";
 import Icon from "../components/Icon.jsx";
-import { CAMERA } from "../data/alder.js";
+import { CAMERA } from "../data/featured.js";
 
 const SceneCompare = lazy(() => import("../components/SceneCompare.jsx"));
 

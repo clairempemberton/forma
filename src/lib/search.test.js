@@ -7,20 +7,20 @@ const titles = (q) => PROJECTS.filter((p) => matchesQuery(p, q)).map((p) => p.ti
 const finds = (q, fragment) => assert.ok(titles(q).some((t) => t.includes(fragment)), `"${q}" should find ${fragment}, got ${JSON.stringify(titles(q))}`);
 
 test("street directionals and suffixes don't block a match", () => {
-  finds("SE Alder St", "Alder");
-  finds("SE 8th Ave", "Alder");
-  finds("8th Avenue", "Alder");
-  finds("SE Division", "Division");
+  finds("SE Hawthorne Blvd", "Hawthorne");
+  finds("NE Broadway", "Broadway");
+  finds("SE 59th Ave", "59th");
+  finds("82nd Avenue", "82nd");
 });
 
 test("plurals and partial words match", () => {
-  finds("bus stops", "Belmont");
-  finds("crossings", "Division");
-  finds("laurel", "Laurelhurst");
+  finds("crossings", "Hawthorne");
+  finds("skate", "Creston");
+  finds("pickleball courts", "Westmoreland");
 });
 
 test("common synonyms match", () => {
-  finds("crosswalk", "Crossing");
+  finds("crosswalk", "Hawthorne");
 });
 
 test("a query of only filler words matches every project", () => {
@@ -29,10 +29,10 @@ test("a query of only filler words matches every project", () => {
 });
 
 test("unrelated words still filter out", () => {
-  assert.deepEqual(titles("Hawthorne"), []);
-  assert.deepEqual(titles("Alder Laurelhurst"), []);
+  assert.deepEqual(titles("Alberta"), []);
+  assert.deepEqual(titles("Hawthorne skatepark"), []);
 });
 
 test("queryWords drops filler and normalises", () => {
-  assert.deepEqual(queryWords("SE Alder St & 8th Ave, Portland OR"), ["alder", "8th"]);
+  assert.deepEqual(queryWords("SE Hawthorne Blvd & 37th Ave, Portland OR"), ["hawthorne", "37th"]);
 });

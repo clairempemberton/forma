@@ -3,7 +3,7 @@ import { Link, NavLink, useLocation, useNavigate, useParams } from "react-router
 import MapView from "../map/MapView.jsx";
 import Icon from "../components/Icon.jsx";
 import { Empty, FeatureId, Legend, LEGEND_PROPOSAL, Truth } from "../components/ui.jsx";
-import { CAMERA, EXISTING_FEATURES, F, OPTIONS, OPTION_BY_ID, THEME_BY_ID } from "../data/alder.js";
+import { CAMERA, COPY, DECISION, EXISTING_FEATURES, F, LEGEND, OPTIONS, OPTION_BY_ID, THEME_BY_ID, optName, optTag } from "../data/featured.js";
 import { formatCoord, point } from "../lib/geo.js";
 import { useMapMode, useParam } from "../lib/useMapMode.js";
 import { useIsMobile } from "../lib/motion.js";
@@ -13,17 +13,17 @@ import "./proposal.css";
 const RADIUS = 15;
 const ZOOM = { transit: 19.2, bike: 18.9 };
 
-// R07 · Feature inspector — one existing feature, what each option changes there, and what people said.
+// R07 · Feature inspector — one existing feature, what each alternative changes there, and what people said.
 export default function Inspector() {
   const { fid } = useParams();
   const [mode, setMode] = useMapMode();
-  const [optParam, setOptParam] = useParam("option", "C");
+  const [optParam, setOptParam] = useParam("option", DECISION.chosen);
   const navigate = useNavigate();
   const { search } = useLocation();
   const qs = search;
   const mobile = useIsMobile();
   const headRef = useRef(null);
-  const option = optParam === "today" ? null : OPTION_BY_ID[optParam] || OPTION_BY_ID.C;
+  const option = optParam === "today" ? null : OPTION_BY_ID[optParam] || OPTION_BY_ID[DECISION.chosen];
 
   const index = EXISTING_FEATURES.findIndex((f) => f.id === fid);
   const feature = EXISTING_FEATURES[index];
@@ -72,10 +72,10 @@ export default function Inspector() {
     return (
       <main id="main" tabIndex={-1} className="wrap page ins-pg__missing">
         <Empty level={1} icon="search" title={`We couldn't find feature “${fid}”`}
-          action={<Link to={`${PROJECT_BASE}/explore`} className="btn btn--primary"><Icon name="arrowLeft" />Back to the corner</Link>}>
-          It may have been renamed in a revision, or the link was mistyped. These are the features you can inspect at Alder &amp; 8th:
+          action={<Link to={`${PROJECT_BASE}/explore`} className="btn btn--primary"><Icon name="arrowLeft" />Back to the street</Link>}>
+          It may have been renamed in a revision, or the link was mistyped. These are the features you can inspect on {COPY.placeShort}:
         </Empty>
-        <ul className="rows ins-pg__missing-list" aria-label="Features at this corner">
+        <ul className="rows ins-pg__missing-list" aria-label={COPY.featuresLabel}>
           {EXISTING_FEATURES.map((f) => (
             <li key={f.id}>
               <Link className="rowbtn" to={`${PROJECT_BASE}/inspect/${f.id}`}>
@@ -95,7 +95,7 @@ export default function Inspector() {
 
   return (
     <main id="main" tabIndex={-1} className="map-page ins-pg">
-      <nav className="map-page__panel ins-pg__nav" aria-label="Features at this corner">
+      <nav className="map-page__panel ins-pg__nav" aria-label={COPY.featuresLabel}>
         <div className="map-page__scroll stack" style={{ "--stack": "14px" }}>
           <p className="t-eyebrow">Today · {EXISTING_FEATURES.length} features</p>
           <ul className="rows">
@@ -123,9 +123,9 @@ export default function Inspector() {
           focus={focus}
           markers={markers}
           onMarkerClick={(m) => m.kind === "feature" && navigate(`${PROJECT_BASE}/inspect/${m.fid}${qs}`)}
-          legend={<Legend items={LEGEND_PROPOSAL} />}
+          legend={<Legend items={LEGEND || LEGEND_PROPOSAL} />}
           streetTarget={feature.lngLat}
-          streetContext={`Today, near ${feature.id} ${feature.name}. Proposed street-level renders are in production.`}
+          streetContext={`Today, near ${feature.id} ${feature.name}. ${COPY.photoNote}`}
           hud={false}
         />
       </div>
@@ -144,31 +144,33 @@ export default function Inspector() {
           <section className="ins-pg__sec" aria-labelledby="ins-today">
             <div className="row" style={{ justifyContent: "space-between" }}>
               <h2 id="ins-today" className="ins-pg__h">Today</h2>
-              <Truth kind="osm" />
+              <Truth kind="osm">OpenStreetMap · {COPY.agencyShort} where noted</Truth>
             </div>
             <ul className="ins-pg__facts">
               {feature.facts.map((t) => <li key={t}>{t}</li>)}
             </ul>
-            <p className="t-caption t-muted ins-pg__osm">
-              <a className="link" href={`https://www.openstreetmap.org/${feature.osm}`} target="_blank" rel="noreferrer">OpenStreetMap {feature.osm}<Icon name="external" /><span className="sr-only">(opens in a new tab)</span></a>
-            </p>
+            {feature.osm && (
+              <p className="t-caption t-muted ins-pg__osm">
+                <a className="link" href={`https://www.openstreetmap.org/${feature.osm}`} target="_blank" rel="noreferrer">OpenStreetMap {feature.osm}<Icon name="external" /><span className="sr-only">(opens in a new tab)</span></a>
+              </p>
+            )}
           </section>
 
           <section className="ins-pg__sec" aria-labelledby="ins-options">
             <div className="row" style={{ justifyContent: "space-between" }}>
-              <h2 id="ins-options" className="ins-pg__h">What each option changes here</h2>
+              <h2 id="ins-options" className="ins-pg__h">What each {COPY.alt.toLowerCase()} changes here</h2>
             </div>
             <div className="seg ins-pg__seg" role="radiogroup" aria-label="Drawn on the map">
               {[{ id: "today", label: "Today" }, ...OPTIONS.map((o) => ({ id: o.id, label: o.id }))].map((o) => (
                 <button key={o.id} type="button" role="radio" aria-checked={(option?.id ?? "today") === o.id} className="seg__btn" onClick={() => setOptParam(o.id)}>
-                  {o.id === "today" ? o.label : `Option ${o.label}`}
+                  {o.id === "today" ? o.label : optTag(o.label)}
                 </button>
               ))}
             </div>
             <ul className="ins-pg__opts">
               {perOption.map(({ o, items }) => (
                 <li key={o.id} className="ins-pg__opt" data-on={option?.id === o.id}>
-                  <button type="button" className="ins-pg__opt-head" onClick={() => setOptParam(o.id)} aria-pressed={option?.id === o.id} aria-label={`Show Option ${o.id} on the map`}>
+                  <button type="button" className="ins-pg__opt-head" onClick={() => setOptParam(o.id)} aria-pressed={option?.id === o.id} aria-label={`Show ${optName(o.id)} on the map`}>
                     <span className="alt-pg__letter">{o.id}</span>
                     <span className="ins-pg__opt-name">{o.name}</span>
                     <Icon name="eye" />
@@ -183,7 +185,7 @@ export default function Inspector() {
                 </li>
               ))}
             </ul>
-            <Truth kind="illustrative">Illustrative · within {RADIUS} m of {feature.id}</Truth>
+            <Truth kind="illustrative">Concept drawing · within {RADIUS} m of {feature.id}</Truth>
           </section>
 
           <section className="ins-pg__sec" aria-labelledby="ins-voices">
@@ -196,7 +198,7 @@ export default function Inspector() {
                 {nearby.slice(0, 4).map((c) => (
                   <li key={c.id}>
                     <p>“{c.text}”</p>
-                    <span className="t-caption t-muted">{c.author} · {THEME_BY_ID[c.theme]?.name}{c.option ? ` · Option ${c.option}` : ""}</span>
+                    <span className="t-caption t-muted">{c.author} · {THEME_BY_ID[c.theme]?.name}{c.option ? ` · ${optTag(c.option)}` : ""}</span>
                   </li>
                 ))}
               </ul>

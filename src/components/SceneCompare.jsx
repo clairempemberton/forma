@@ -5,7 +5,7 @@ import Icon from "./Icon.jsx";
 // variants of the same scene (same camera); otherwise shows what is still needed.
 const BASE = "./urban-scenes/metadata/";
 
-export function useScenes(project = "alder-8th") {
+export function useScenes(project = "hawthorne") {
   const [scenes, setScenes] = useState(null);
   useEffect(() => {
     let alive = true;
@@ -25,8 +25,9 @@ export default function SceneCompare({ scene: sceneId, position = 50 }) {
   const scenes = useScenes();
   const [active, setActive] = useState(sceneId);
   if (!scenes) return <div className="scn scn--loading"><span className="mv__spinner" /></div>;
-  const scene = scenes.find((s) => s.id === (active || sceneId)) || scenes[0];
-  if (!scene) return <div className="scn"><p className="t-compact t-muted">No street-level scenes are defined for this project.</p></div>;
+  // Only a scene listed in the metadata is shown; with none, there is nothing to compare.
+  const scene = scenes.find((s) => s.id === (active || sceneId));
+  if (!scene) return null;
 
   const ex = scene.variants.existing;
   const pr = scene.variants.proposed;
@@ -36,7 +37,7 @@ export default function SceneCompare({ scene: sceneId, position = 50 }) {
     return (
       <div className="scn scn--ready">
         <img className="scn__img" src={resolve(ex.src)} alt={`Today: ${scene.title}`} />
-        <img className="scn__img" src={resolve(pr.src)} alt={`Proposed, option ${pr.option}: ${scene.title}`} style={{ clipPath: `inset(0 0 0 ${position}%)` }} />
+        <img className="scn__img" src={resolve(pr.src)} alt={`Proposed, Alternative ${pr.option}: ${scene.title}`} style={{ clipPath: `inset(0 0 0 ${position}%)` }} />
         <div className="scn__note glass">
           <span className="badge badge--warning">Simulated render</span>
           <span className="t-caption">{scene.title} · camera {scene.camera.headingDegrees}° at {scene.camera.heightMeters} m</span>
@@ -64,7 +65,7 @@ export default function SceneCompare({ scene: sceneId, position = 50 }) {
         </div>
         <dl className="scn__status">
           <div><dt>Existing</dt><dd>{ex.status === "ready" ? "Ready" : "Pending"} · {ex.basis}</dd></div>
-          <div><dt>Proposed</dt><dd>{pr.status === "ready" ? "Ready" : "Pending"} · Option {pr.option} {pr.proposalVersion}</dd></div>
+          <div><dt>Proposed</dt><dd>{pr.status === "ready" ? "Ready" : "Pending"} · Alternative {pr.option} {pr.proposalVersion}</dd></div>
         </dl>
       </div>
     </div>

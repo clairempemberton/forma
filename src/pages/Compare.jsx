@@ -1,23 +1,27 @@
 import { useEffect, useId, useMemo, useRef, useState } from "react";
 import { Link } from "react-router-dom";
 import CompareMap from "../map/CompareMap.jsx";
+import ModeSwitch from "../map/ModeSwitch.jsx";
+import { MODES } from "../map/engine.js";
 import Icon from "../components/Icon.jsx";
 import { Notice, Steps, Truth } from "../components/ui.jsx";
-import { OPTIONS, OPTION_BY_ID, F, CAMERA } from "../data/alder.js";
+import { OPTIONS, OPTION_BY_ID, DECISION, CAMERA, COPY, PROJECT, countWord, optName, optTag } from "../data/featured.js";
 import { useMapMode, useParam } from "../lib/useMapMode.js";
 import { useReducedMotion, useIsMobile } from "../lib/motion.js";
 import { NOTICE, PROJECT_BASE, noticeLngLat, wordsFor } from "./proposal-lib.js";
 import "./proposal.css";
 
-// Frames the corner and the Morrison bus stop together, so every numbered change is in view.
-const COMPARE_CAMERA = { center: F.toLngLat([10, -18]), zoom: 18.3, bearing: 0, pitch: 0 };
+// CAMERA.compare frames the whole project area, so every numbered change is in view.
+// No matched street-level renders exist for these projects, so the compare offers map views only.
+const COMPARE_MODES = MODES.filter((m) => m.id !== "street");
 
 // R05 · Before–after slider — step 2 of the guided walkthrough.
-// Same corner, same camera, same base map: only the proposal layer differs between the sides.
+// Same street, same camera, same base map: only the proposal layer differs between the sides.
 export default function Compare() {
-  const [mode, setMode] = useMapMode();
-  const [optParam, setOptParam] = useParam("option", "C");
-  const option = OPTION_BY_ID[optParam] || OPTION_BY_ID.C;
+  const [viewMode, setMode] = useMapMode();
+  const mode = viewMode === "street" ? "map" : viewMode;
+  const [optParam, setOptParam] = useParam("option", DECISION.chosen);
+  const option = OPTION_BY_ID[optParam] || OPTION_BY_ID[DECISION.chosen];
   const [pos, setPos] = useState(50);
   const [swapped, setSwapped] = useState(false);
   const [words, setWords] = useState(false);
@@ -59,7 +63,7 @@ export default function Compare() {
   const userPos = (v) => { touched.current = true; setPos(v); };
 
   const today = { label: "Today", proposal: null };
-  const proposed = { label: `Option ${option.id} · ${option.short}`, proposal: option.geojson };
+  const proposed = { label: `${optTag(option.id)} · ${option.short}`, proposal: option.geojson };
   const markers = notices.map((n, i) => ({
     id: `n${i}`, kind: "change", index: i + 1, lngLat: noticeLngLat(n), label: n.title, selected: active === i,
     ariaLabel: `${i + 1}. ${n.title}`,
@@ -67,7 +71,7 @@ export default function Compare() {
   const left = swapped ? { ...proposed, markers } : today;
   const right = swapped ? today : proposed;
 
-  const home = mobile ? CAMERA.home : COMPARE_CAMERA;
+  const home = mobile ? CAMERA.home : CAMERA.compare;
   // Fly both sides to a change and slide the divider so the proposed side shows it.
   const focusNotice = (i) => {
     if (i == null || i === active) { setActive(null); setCamera({ ...home }); return; }
@@ -84,9 +88,9 @@ export default function Compare() {
     <div className="table-wrap cmp-pg__table">
       <table className="table">
         <caption className="cmp-pg__caption">
-          Today compared with Option {option.id}, one row per change. <Truth kind="illustrative" />
+          Today compared with {optName(option.id)}, one row per change. <Truth kind="illustrative" />
         </caption>
-        <thead><tr><th scope="col">Change</th><th scope="col">Today</th><th scope="col">Option {option.id}</th></tr></thead>
+        <thead><tr><th scope="col">Change</th><th scope="col">Today</th><th scope="col">{optName(option.id)}</th></tr></thead>
         <tbody>
           {rows.map((r) => (
             <tr key={r.change}>
@@ -105,12 +109,12 @@ export default function Compare() {
       <section className="map-page__panel" aria-labelledby="cmp-title">
         <div className="map-page__scroll stack" style={{ "--stack": "20px" }}>
           <div className="stack" style={{ "--stack": "10px" }}>
-            <p className="t-eyebrow">Step 2 of 3 · Today vs Option {option.id}</p>
+            <p className="t-eyebrow">Step 2 of 3 · Today vs {optName(option.id)}</p>
             <h1 id="cmp-title" className="t-h2">Three things you'd notice first</h1>
-            <p className="t-compact t-muted">Drag the handle across the same corner, today and as proposed. Nothing else on the map changes.</p>
+            <p className="t-compact t-muted">{COPY.compareLead}</p>
           </div>
 
-          <ol className="cmp-pg__cards" aria-label={`What Option ${option.id} changes`}>
+          <ol className="cmp-pg__cards" aria-label={`What ${optName(option.id)} changes`}>
             {notices.map((n, i) => (
               <li key={`${option.id}-${i}`} ref={(el) => (cardRefs.current[i] = el)} className="cmp-pg__card" data-active={active === i}>
                 <span className="cmp-pg__num" aria-hidden="true">{i + 1}</span>
@@ -140,16 +144,16 @@ export default function Compare() {
           <Link to={`${PROJECT_BASE}/alternatives?option=${option.id}`} className="cmp-pg__alt">
             <span className="cmp-pg__alt-icon" aria-hidden="true"><Icon name="layers" /></span>
             <span className="rowbtn__main">
-              <span className="rowbtn__title">See all three options side by side</span>
-              <span className="rowbtn__sub">What A, B and C each trade, on the same camera</span>
+              <span className="rowbtn__title">See all {countWord(OPTIONS.length)} {COPY.alts} side by side</span>
+              <span className="rowbtn__sub">What {OPTIONS.map((o) => o.id).join(", ").replace(/, ([^,]*)$/, " and $1")} each trade, on the same camera</span>
             </span>
             <Icon name="chevronRight" />
           </Link>
 
-          <Notice icon="info">Today comes from OpenStreetMap. Option {option.id} is part of a fictional demo project — illustrative, not a design drawing.</Notice>
+          <Notice icon="info">{COPY.compareNote(optName(option.id))}</Notice>
         </div>
         <div className="map-page__foot">
-          <Link to={`${PROJECT_BASE}/explore`} className="btn btn--secondary btn--icon" aria-label="Back to today's corner"><Icon name="arrowLeft" /></Link>
+          <Link to={`${PROJECT_BASE}/explore`} className="btn btn--secondary btn--icon" aria-label="Back to today's street"><Icon name="arrowLeft" /></Link>
           <Steps total={3} current={1} />
           <Link to={`${PROJECT_BASE}/feedback`} className="btn btn--accent"><Icon name="comment" />Comment on what you see</Link>
         </div>
@@ -162,20 +166,19 @@ export default function Compare() {
           markers={swapped ? [] : markers}
           onMarkerClick={(m) => m.kind === "change" && pick(m.index - 1)}
           mode={mode}
-          onModeChange={setMode}
           initialCamera={home}
           camera={camera}
           position={pos}
           onPosition={userPos}
-          scene="alder-8th-ne-corner"
           label={`Compare ${left.label} and ${right.label}`}
         >
+          <div className="mv__top"><ModeSwitch value={mode} onChange={setMode} modes={COMPARE_MODES} /></div>
           {words && !mobile && (
             <section id={wordsId} className="cmp-pg__words panel-float" aria-labelledby={`${wordsId}-h`}>
               <div className="row" style={{ justifyContent: "space-between", alignItems: "flex-start" }}>
                 <div className="stack" style={{ "--stack": "4px" }}>
                   <p className="t-eyebrow">In words</p>
-                  <h2 id={`${wordsId}-h`} className="t-h3" tabIndex={-1}>Today and Option {option.id}</h2>
+                  <h2 id={`${wordsId}-h`} className="t-h3" tabIndex={-1}>Today and {optName(option.id)}</h2>
                 </div>
                 <button type="button" className="btn btn--ghost btn--icon btn--sm" aria-label="Close the comparison in words" onClick={() => setWords(false)}><Icon name="close" /></button>
               </div>
@@ -188,11 +191,11 @@ export default function Compare() {
               <Icon name="swap" /><span>Swap sides</span>
             </button>
             <span className="sep" aria-hidden="true" />
-            <div className="seg cmp-pg__opts" role="radiogroup" aria-label="Option to compare with today">
+            <div className="seg cmp-pg__opts" role="radiogroup" aria-label={`${COPY.alt} to compare with today`}>
               {OPTIONS.map((o) => (
                 <button key={o.id} type="button" role="radio" aria-checked={o.id === option.id} className="seg__btn"
                   onClick={() => { setOptParam(o.id); if (active != null) { setActive(null); setCamera({ ...home }); } }}>
-                  <span className="cmp-pg__opt-long">Option </span>{o.id}
+                  <span className="cmp-pg__opt-long">{COPY.altShort} </span>{o.id}
                 </button>
               ))}
             </div>

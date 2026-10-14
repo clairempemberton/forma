@@ -1,7 +1,5 @@
 // Small helpers shared by the outcome screens (themes, revision, decision, updates).
-import { THEMES } from "../data/alder.js";
-
-export const TOTAL_COMMENTS = THEMES.reduce((n, t) => n + t.count, 0);
+export { TOTAL_COMMENTS } from "../data/featured.js";
 
 export const THEME_STATUS = {
   addressed: { label: "Addressed", tone: "positive" },

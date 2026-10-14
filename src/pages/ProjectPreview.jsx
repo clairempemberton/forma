@@ -10,7 +10,7 @@ import NotFound from "./NotFound.jsx";
 import { PlanThumb, SiteFooter } from "./DiscoveryKit.jsx";
 import "./discovery.css";
 
-// Stand-in for directory projects that aren't built out. The location is real; the project is not.
+// Directory projects that aren't built out in Forma: the official facts, a map and a link to the agency's page.
 export default function ProjectPreview() {
   const { id } = useParams();
   const p = projectById(id);
@@ -25,14 +25,14 @@ export default function ProjectPreview() {
       </NotFound>
     );
   }
-  const live = projectById("alder-8th");
+  const live = projectById("hawthorne");
 
   return (
     <>
       <main id="main" tabIndex={-1} className="pv">
         <div className="wrap">
           <nav className="crumbs pv-crumbs" aria-label="Breadcrumb">
-            <Link to="/projects">Projects</Link>
+            <Link to="/">Projects</Link>
             <Icon name="chevronRight" />
             <span>{p.area}</span>
             <Icon name="chevronRight" />
@@ -50,20 +50,29 @@ export default function ProjectPreview() {
             <p className="pv-meta"><Icon name="pin" />{p.area}, Portland · {p.topic}</p>
             <p className="t-body t-muted">{p.summary}</p>
             <dl className="pv-facts">
+              <div><dt>Agency</dt><dd>{p.agency}</dd></div>
               <div><dt>Dates</dt><dd>{p.dates}</dd></div>
-              <div><dt>Other ways in</dt><dd>{p.access}</dd></div>
-              <div><dt>Location</dt><dd className="t-mono">{formatCoord(p.lngLat)}</dd></div>
+              <div><dt>Location</dt><dd className="t-mono">{formatCoord(p.lngLat)} · approximate</dd></div>
             </dl>
+            {p.facts?.length > 0 && (
+              <ul className="pv-factlist t-compact">
+                {p.facts.map((f) => <li key={f}>{f}</li>)}
+              </ul>
+            )}
+            <p className="row">
+              <Truth kind="source">Source: {p.agency}</Truth>
+              {p.url && <a className="link" href={p.url} target="_blank" rel="noreferrer">Official project page<Icon name="external" /></a>}
+            </p>
 
             <div className="pv-notice" role="note">
               <div className="pv-notice__thumb"><PlanThumb id={live.id} /></div>
               <div className="pv-notice__body">
-                <p className="pv-notice__title"><Icon name="info" />This demo project is a preview. Only Alder &amp; 8th is fully built.</p>
-                <p className="t-compact t-muted">There are no options, comments or decisions here. Alder &amp; 8th has all of them: a live map, three options, a guided tour and a published decision.</p>
-                <Link to={`/projects/${live.id}`} className="btn btn--accent btn--sm">Open Alder &amp; 8th<Icon name="arrowRight" /></Link>
+                <p className="pv-notice__title"><Icon name="info" />This project is a preview in Forma. Only SE Hawthorne is fully built.</p>
+                <p className="t-compact t-muted">Forma shows only the official facts here. SE Hawthorne has the full story: a live map, PBOT's four alternatives, a guided tour and the published decision.</p>
+                <Link to={`/projects/${live.id}`} className="btn btn--accent btn--sm">Open SE Hawthorne<Icon name="arrowRight" /></Link>
               </div>
             </div>
-            <Link to="/projects" className="link"><Icon name="arrowLeft" />Back to all projects</Link>
+            <Link to="/" className="link"><Icon name="arrowLeft" />Back to all projects</Link>
           </div>
 
           <figure className="pv-map">
@@ -81,9 +90,9 @@ export default function ProjectPreview() {
               hud={false}
               ariaLabel={`Map around ${p.title}, ${p.area}, Portland`}
               streetTarget={p.lngLat}
-              streetContext="Street-level photos near this location. Nothing here is proposed."
+              streetContext="Street-level photos near this location. They may predate the project."
             >
-              <span className="pv-map__truth glass"><Truth kind="illustrative">Real location · fictional project</Truth></span>
+              <span className="pv-map__truth glass"><Truth kind="osm">Approximate location · OpenStreetMap</Truth></span>
             </MapView>
           </figure>
         </section>

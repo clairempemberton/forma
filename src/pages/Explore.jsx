@@ -3,9 +3,8 @@ import { Link, useNavigate } from "react-router-dom";
 import MapView from "../map/MapView.jsx";
 import Icon from "../components/Icon.jsx";
 import { FeatureId, Legend, LEGEND_PROPOSAL, Notice, Steps, Truth } from "../components/ui.jsx";
-import { EXISTING_FEATURES, OPTIONS, OPTION_BY_ID, CAMERA } from "../data/alder.js";
+import { EXISTING_FEATURES, OPTIONS, OPTION_BY_ID, CAMERA, COPY, F, LEGEND, optName, optTag } from "../data/featured.js";
 import { point } from "../lib/geo.js";
-import { F } from "../data/alder.js";
 import { useMapMode, useParam } from "../lib/useMapMode.js";
 
 // R04 · Existing conditions — step 1 of the guided proposal walkthrough.
@@ -31,21 +30,21 @@ export default function Explore() {
         <div className="map-page__scroll stack" style={{ "--stack": "20px" }}>
           <div className="stack" style={{ "--stack": "10px" }}>
             <p className="t-eyebrow">Step 1 of 3 · Today</p>
-            <h1 id="explore-title" className="t-h2">How the corner works now</h1>
-            <p className="t-compact t-muted">Start with what's there. Select anything on the map, or use the list below with a keyboard.</p>
+            <h1 id="explore-title" className="t-h2">{COPY.exploreTitle}</h1>
+            <p className="t-compact t-muted">{COPY.exploreLead} Select anything on the map, or use the list below with a keyboard.</p>
           </div>
 
           <div className="seg" role="radiogroup" aria-label="Show on the map" style={{ width: "100%" }}>
-            {[{ id: "today", label: "Today" }, ...OPTIONS.map((o) => ({ id: o.id, label: `Option ${o.id}` }))].map((o) => (
+            {[{ id: "today", label: "Today" }, ...OPTIONS.map((o) => ({ id: o.id, label: optTag(o.id) }))].map((o) => (
               <button key={o.id} type="button" role="radio" aria-checked={show === o.id} className="seg__btn" onClick={() => setShow(o.id)}
                 style={show === o.id ? { background: "var(--surface)", boxShadow: "0 1px 2px rgba(14,17,22,.08), 0 0 0 1px var(--hairline)" } : undefined}>
                 {o.label}
               </button>
             ))}
           </div>
-          {option && <Notice tone="accent" icon="layers"><strong>Option {option.id} · {option.name}.</strong> {option.summary}</Notice>}
+          {option && <Notice tone="accent" icon="layers"><strong>{optName(option.id)} · {option.name}.</strong> {option.summary}</Notice>}
 
-          <ul className="rows" aria-label="Features at this corner">
+          <ul className="rows" aria-label={COPY.featuresLabel}>
             {EXISTING_FEATURES.map((f) => (
               <li key={f.id}>
                 <button type="button" className="rowbtn" aria-pressed={sel === f.id} onClick={() => setSel(sel === f.id ? null : f.id)}>
@@ -59,7 +58,7 @@ export default function Explore() {
                       {f.facts.map((t) => <li key={t} className="t-compact">{t}</li>)}
                     </ul>
                     <div className="row" style={{ justifyContent: "space-between", marginTop: 10 }}>
-                      <Truth kind="osm" />
+                      <Truth kind="osm">OpenStreetMap · {COPY.agencyShort} where noted</Truth>
                       <Link className="link" to={`../inspect/${f.id}`}>Inspect {f.id}<Icon name="arrowRight" /></Link>
                     </div>
                   </div>
@@ -68,7 +67,7 @@ export default function Explore() {
             ))}
           </ul>
 
-          <Notice icon="info">Existing conditions come from OpenStreetMap and may be incomplete. The project and its options are fictional and illustrative — don't measure from them.</Notice>
+          <Notice icon="info">Existing conditions come from OpenStreetMap and may be incomplete. {COPY.drawingNote}</Notice>
         </div>
         <div className="map-page__foot">
           <Steps total={3} current={0} />
@@ -88,11 +87,11 @@ export default function Explore() {
           focus={focus}
           markers={markers}
           onMarkerClick={(m) => setSel(sel === m.id ? null : m.id)}
-          legend={<Legend items={LEGEND_PROPOSAL} />}
+          legend={<Legend items={LEGEND || LEGEND_PROPOSAL} />}
           streetTarget={selected?.lngLat}
-          streetContext="Today, as photographed. Proposed street-level renders are in production."
+          streetContext={COPY.streetContext}
         />
-        <div className="map-chip glass" aria-live="polite"><Icon name="eye" />Showing: <strong>{option ? `Option ${option.id}` : "Today"}</strong></div>
+        <div className="map-chip glass" aria-live="polite"><Icon name="eye" />Showing: <strong>{option ? optName(option.id) : "Today"}</strong></div>
       </div>
     </main>
   );

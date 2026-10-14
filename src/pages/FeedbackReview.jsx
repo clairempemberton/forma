@@ -2,9 +2,9 @@ import { useRef, useState } from "react";
 import { Link, useNavigate } from "react-router-dom";
 import Icon from "../components/Icon.jsx";
 import { Empty, Truth, fmtDate } from "../components/ui.jsx";
-import { THEME_BY_ID } from "../data/alder.js";
+import { THEME_BY_ID, PROJECT_BASE } from "../data/featured.js";
 import { submitDraft, updateDraft, setState, useStore } from "../lib/store.js";
-import { FlowSteps, MiniMap, THEME_ICON, describePlace, optionLabel, sentimentLabel, themeName } from "./participate-shared.jsx";
+import { FlowSteps, MiniMap, themeIcon, describePlace, optionLabel, sentimentLabel, themeName } from "./participate-shared.jsx";
 import "./participate.css";
 
 // R12 · Privacy and submission preview (step 3 of 3).
@@ -21,7 +21,7 @@ export default function FeedbackReview() {
     return (
       <main id="main" tabIndex={-1} className="pt-flow">
         <div className="wrap pt-flow__wrap">
-          <Empty level={1} icon="comment" title="There's nothing to check yet" action={<Link className="btn btn--accent" to="/projects/alder-8th/feedback">Start a comment<Icon name="arrowRight" /></Link>}>
+          <Empty level={1} icon="comment" title="There's nothing to check yet" action={<Link className="btn btn--accent" to={`${PROJECT_BASE}/feedback`}>Start a comment<Icon name="arrowRight" /></Link>}>
             Your draft is empty — it may have been sent already, or cleared. Drafts live only in this browser.
           </Empty>
         </div>
@@ -47,7 +47,7 @@ export default function FeedbackReview() {
         const extra = { placeLabel: place, describe: describing ? draft.describe : null, locMode: draft.locMode || "map" };
         const c = submitDraft();
         setState((s) => ({ mine: s.mine.map((m) => (m.id === c.id ? { ...m, ...extra } : m)) }));
-        navigate(`/projects/alder-8th/feedback/receipt/${c.ref}`);
+        navigate(`${PROJECT_BASE}/feedback/receipt/${c.ref}`);
       } catch (e) {
         setStatus("error");
         setError(e?.message || "Something went wrong while saving your comment.");
@@ -72,7 +72,7 @@ export default function FeedbackReview() {
               {!describing && <MiniMap lngLat={draft.lngLat} zoom={19.2} className="pt-preview__map" />}
               <div className="pt-preview__body">
                 <div className="pt-badges">
-                  <span className="badge badge--voice">{theme && <Icon name={THEME_ICON[theme.id]} />}{themeName(draft.theme)}</span>
+                  <span className="badge badge--voice">{theme && <Icon name={themeIcon(theme.id)} />}{themeName(draft.theme)}</span>
                   <span className="badge badge--outline badge--plain">{place}</span>
                   <span className="badge badge--outline badge--plain">{optionLabel(draft.option).split(" · ")[0]}</span>
                   <span className="badge badge--outline badge--plain">{sentimentLabel(draft.sentiment)}</span>
@@ -94,7 +94,7 @@ export default function FeedbackReview() {
                 <li><Icon name="check" />{describing ? "Your description is used only to place the pin" : "Any location other than this pin"}</li>
               </ul>
             </div>
-            <Link className="btn btn--ghost pt-edit" to={`/projects/alder-8th/feedback/compose${describing ? "?describe=1" : ""}`}><Icon name="edit" />Edit comment</Link>
+            <Link className="btn btn--ghost pt-edit" to={`${PROJECT_BASE}/feedback/compose${describing ? "?describe=1" : ""}`}><Icon name="edit" />Edit comment</Link>
           </div>
         </section>
 
@@ -142,13 +142,13 @@ export default function FeedbackReview() {
                 <Icon name="alert" />
                 <div>
                   <p><strong>Your comment wasn't sent.</strong> {error}</p>
-                  <p>Your draft is still saved in this browser. <Link className="link" to="/projects/alder-8th/feedback">Check the location</Link> or try again.</p>
+                  <p>Your draft is still saved in this browser. <Link className="link" to={`${PROJECT_BASE}/feedback`}>Check the location</Link> or try again.</p>
                 </div>
               </div>
             )}
 
             <div className="pt-formfoot pt-formfoot--review">
-              <Link className="btn btn--secondary" to={`/projects/alder-8th/feedback/compose${describing ? "?describe=1" : ""}`}><Icon name="arrowLeft" />Back</Link>
+              <Link className="btn btn--secondary" to={`${PROJECT_BASE}/feedback/compose${describing ? "?describe=1" : ""}`}><Icon name="arrowLeft" />Back</Link>
               <button type="button" className="btn btn--accent btn--lg" onClick={send} aria-disabled={status === "sending"} disabled={status === "sending"}>
                 {status === "sending" ? <><span className="mv__spinner pt-spin" aria-hidden="true" />Sending…</> : <><Icon name="send" />Send my comment</>}
               </button>

@@ -1,15 +1,15 @@
 import Icon from "../components/Icon.jsx";
 
-const KIND_ICON = { transit: "bus", bike: "bike", control: "flag", crossing: "walk" };
+const KIND_ICON = { transit: "bus", bike: "bike", control: "flag", crossing: "walk", park: "tree", path: "walk", skate: "sparkle" };
 
 // Accessible DOM markers placed over the map.
 //   feature  — inspectable feature: dark ID chip with a label (X-01 · North crossing)
-//   comment  — a resident comment: small amber speech pin
+//   comment  — a resident comment: small grey speech pin
 //   change   — a revision change: accent ring with number
 //   project  — a project in the directory
 export default function Marker({ m, onClick }) {
   const style = { transform: `translate(${m.x}px, ${m.y}px)` };
-  const cls = ["mk", `mk--${m.kind}`, m.selected && "is-selected", m.dim && "is-dim", m.mine && "is-mine"].filter(Boolean).join(" ");
+  const cls = ["mk", `mk--${m.kind}`, m.tone && `mk--${m.tone}`, m.featured && "is-featured", m.hover && "is-hover", m.selected && "is-selected", m.dim && "is-dim", m.mine && "is-mine"].filter(Boolean).join(" ");
 
   if (m.kind === "comment") {
     return (
@@ -31,7 +31,7 @@ export default function Marker({ m, onClick }) {
     return (
       <button type="button" className={cls} style={style} onClick={onClick} aria-pressed={!!m.selected} aria-label={m.ariaLabel || m.label}>
         <span className="mk__dot" />
-        {m.selected && <span className="mk__label">{m.label}</span>}
+        <span className="mk__label" aria-hidden="true">{m.label}</span>
       </button>
     );
   }

@@ -2,30 +2,39 @@ import { useMemo, useState } from "react";
 import { Link } from "react-router-dom";
 import MapView from "../map/MapView.jsx";
 import CompareMap from "../map/CompareMap.jsx";
+import ModeSwitch from "../map/ModeSwitch.jsx";
+import { MODES } from "../map/engine.js";
 import Icon from "../components/Icon.jsx";
 import { Legend, LEGEND_PROPOSAL, Notice, Truth, fmtDate } from "../components/ui.jsx";
-import { OPTIONS, OPTION_BY_ID, SAMPLE_COMMENTS, THEME_BY_ID, CAMERA, DECISION } from "../data/alder.js";
+import { OPTIONS, OPTION_BY_ID, SAMPLE_COMMENTS, THEME_BY_ID, CAMERA, COPY, DECISION, LEGEND, PROJECT, SOURCES, cap, optName, optTag } from "../data/featured.js";
 import { useMapMode, useParam } from "../lib/useMapMode.js";
 import { MATRIX, PROJECT_BASE, useMedia } from "./proposal-lib.js";
 import "./proposal.css";
 
-// R06 · Alternatives — A, B and C on one map with one camera. Switching only swaps the proposal layer.
+// No matched street-level renders exist for these projects, so side by side offers map views only.
+const COMPARE_MODES = MODES.filter((m) => m.id !== "street");
+const idList = () => { const ids = OPTIONS.map((o) => o.id); return `${ids.slice(0, -1).join(", ")} and ${ids.at(-1)}`; };
+
+// R06 · Alternatives — every option the agency drew, on one map with one camera. Switching only swaps the proposal layer.
 export default function Alternatives() {
+  const FIRST = OPTIONS[0].id;
+  const OTHER = OPTIONS.find((o) => o.id !== DECISION.chosen).id;
   const [mode, setMode] = useMapMode();
-  const [optParam, setOptParam] = useParam("option", "A");
+  const [optParam, setOptParam] = useParam("option", FIRST);
   const [layout, setLayout] = useParam("layout", "one");
-  const [leftId, setLeftId] = useParam("left", "A");
-  const [rightId, setRightId] = useParam("right", "B");
+  const [leftId, setLeftId] = useParam("left", OTHER);
+  const [rightId, setRightId] = useParam("right", DECISION.chosen);
   const [selComment, setSelComment] = useState(null);
   const wide = useMedia("(min-width: 1280px)");
-  const option = OPTION_BY_ID[optParam] || OPTION_BY_ID.A;
+  const option = OPTION_BY_ID[optParam] || OPTION_BY_ID[FIRST];
   const side = layout === "side";
-  const L = OPTION_BY_ID[leftId] || OPTION_BY_ID.A;
-  const R = OPTION_BY_ID[rightId] || OPTION_BY_ID.B;
+  const L = OPTION_BY_ID[leftId] || OPTION_BY_ID[OTHER];
+  const R = OPTION_BY_ID[rightId] || OPTION_BY_ID[DECISION.chosen];
+  const sideMode = mode === "street" ? "map" : mode;
 
   const comments = useMemo(() => SAMPLE_COMMENTS.filter((c) => c.option === option.id), [option.id]);
   const markers = useMemo(() => comments.map((c) => ({
-    id: c.id, kind: "comment", lngLat: c.lngLat, label: c.text, selected: selComment === c.id, ariaLabel: `Comment on Option ${c.option}: ${c.text}`,
+    id: c.id, kind: "comment", lngLat: c.lngLat, label: c.text, selected: selComment === c.id, ariaLabel: `Comment on ${optName(c.option)}: ${c.text}`,
   })), [comments, selComment]);
 
   const choose = (id) => { setOptParam(id); setSelComment(null); };
@@ -41,13 +50,13 @@ export default function Alternatives() {
       <section className="map-page__panel" aria-labelledby="alt-title">
         <div className="map-page__scroll stack" style={{ "--stack": "20px" }}>
           <div className="stack" style={{ "--stack": "10px" }}>
-            <p className="t-eyebrow">Three options · equal weight</p>
+            <p className="t-eyebrow">{OPTIONS.length} {COPY.alts} · equal weight</p>
             <h1 id="alt-title" className="t-h2">What each one trades</h1>
-            <p className="t-compact t-muted">Same corner, same camera. Switching options only changes what's drawn on the map.</p>
+            <p className="t-compact t-muted">{COPY.altsLead}</p>
           </div>
 
           <fieldset className="alt-pg__options">
-            <legend className="sr-only">Option shown on the map</legend>
+            <legend className="sr-only">{COPY.alt} shown on the map</legend>
             {OPTIONS.map((o) => {
               const on = o.id === option.id;
               return (
@@ -55,6 +64,7 @@ export default function Alternatives() {
                   <label className="alt-pg__opt-head">
                     <input type="radio" name="alt-option" value={o.id} checked={on} onChange={() => choose(o.id)} />
                     <span className="alt-pg__opt-name"><span className="alt-pg__letter">{o.id}</span>{o.name}</span>
+                    {o.id === DECISION.chosen && <span className="badge badge--positive badge--plain">Chosen</span>}
                     {on && <span className="badge badge--accent badge--plain">On map</span>}
                   </label>
                   {on ? (
@@ -89,7 +99,7 @@ export default function Alternatives() {
 
           <section className="stack" style={{ "--stack": "10px" }} aria-labelledby="alt-voices">
             <div className="row" style={{ justifyContent: "space-between" }}>
-              <h2 id="alt-voices" className="t-h3 alt-pg__h3">What people said about Option {option.id}</h2>
+              <h2 id="alt-voices" className="t-h3 alt-pg__h3">What people said about {optName(option.id)}</h2>
               <span className="badge badge--voice t-num">{comments.length}</span>
             </div>
             {comments.length ? (
@@ -103,13 +113,13 @@ export default function Alternatives() {
                   </li>
                 ))}
               </ul>
-            ) : <p className="t-compact t-muted">No sample comments mention this option directly.</p>}
+            ) : <p className="t-compact t-muted">No sample comments mention this {COPY.alt.toLowerCase()} directly.</p>}
             <Truth kind="sample" />
           </section>
 
           {!wide && matrix}
 
-          <Notice icon="info">All three options are shown in the same format and at the same size. Round 1 took Option {DECISION.chosen} forward; A and B stay here so you can see what was traded.</Notice>
+          <Notice icon="info">All {OPTIONS.length} {COPY.alts} are shown in the same format and at the same size. {COPY.altsChosenNote} <a className="link" href={SOURCES.decision.url} target="_blank" rel="noreferrer">Read the {COPY.decisionDoc}<Icon name="external" /></a></Notice>
         </div>
         <div className="map-page__foot">
           <Link to={`${PROJECT_BASE}/compare?option=${option.id}`} className="btn btn--secondary"><Icon name="arrowLeft" />Compare with today</Link>
@@ -122,14 +132,13 @@ export default function Alternatives() {
         {side ? (
           <CompareMap
             key="side"
-            left={{ label: `Option ${L.id} · ${L.short}`, proposal: L.geojson }}
-            right={{ label: `Option ${R.id} · ${R.short}`, proposal: R.geojson }}
-            mode={mode}
-            onModeChange={setMode}
+            left={{ label: `${optTag(L.id)} · ${L.short}`, proposal: L.geojson }}
+            right={{ label: `${optTag(R.id)} · ${R.short}`, proposal: R.geojson }}
+            mode={sideMode}
             initialCamera={CAMERA.home}
-            scene="alder-8th-ne-corner"
-            label={`Compare Option ${L.id} and Option ${R.id}`}
+            label={`Compare ${optName(L.id)} and ${optName(R.id)}`}
           >
+            <div className="mv__top"><ModeSwitch value={sideMode} onChange={setMode} modes={COMPARE_MODES} /></div>
             <Toolbar side={side} setLayout={setLayout} option={option} choose={choose} L={L} R={R} setLeftId={setLeftId} setRightId={setRightId} />
           </CompareMap>
         ) : (
@@ -142,24 +151,24 @@ export default function Alternatives() {
             showProposal
             markers={markers}
             onMarkerClick={onMarker}
-            legend={<Legend items={LEGEND_PROPOSAL} />}
+            legend={<Legend items={LEGEND || LEGEND_PROPOSAL} />}
             hud={false}
-            streetContext="Today, as photographed. Proposed street-level renders are in production."
+            streetContext={`Today, as photographed. There are no street-level renders of the ${COPY.alts}.`}
           >
-            <p className="sr-only" aria-live="polite">Showing Option {option.id} on the map.</p>
+            <p className="sr-only" aria-live="polite">Showing {optName(option.id)} on the map.</p>
             <Toolbar side={side} setLayout={setLayout} option={option} choose={choose} L={L} R={R} setLeftId={setLeftId} setRightId={setRightId} />
           </MapView>
         )}
       </div>
 
-      {wide && <aside className="alt-pg__side" aria-label="Comparison of the three options">{matrix}</aside>}
+      {wide && <aside className="alt-pg__side" aria-label="Comparison of the alternatives">{matrix}</aside>}
     </main>
   );
 }
 
 function Toolbar({ side, setLayout, option, choose, L, R, setLeftId, setRightId }) {
   return (
-    <div className="map-toolbar glass alt-pg__toolbar" role="toolbar" aria-label="Alternatives controls">
+    <div className="map-toolbar glass alt-pg__toolbar" role="toolbar" aria-label={`${cap(COPY.alts)} controls`}>
       <div className="seg alt-pg__seg" role="radiogroup" aria-label="Layout">
         <button type="button" role="radio" aria-checked={!side} className="seg__btn" onClick={() => setLayout("one")}><Icon name="map" />One map</button>
         <button type="button" role="radio" aria-checked={side} className="seg__btn" onClick={() => setLayout("side")}><Icon name="swap" />Side by side</button>
@@ -169,20 +178,20 @@ function Toolbar({ side, setLayout, option, choose, L, R, setLeftId, setRightId 
         <div className="row alt-pg__pair">
           <label className="alt-pg__pick"><span>Left</span>
             <select className="alt-pg__select" value={L.id} onChange={(e) => setLeftId(e.target.value)}>
-              {OPTIONS.map((o) => <option key={o.id} value={o.id} disabled={o.id === R.id}>Option {o.id}</option>)}
+              {OPTIONS.map((o) => <option key={o.id} value={o.id} disabled={o.id === R.id}>{optTag(o.id)}</option>)}
             </select>
           </label>
           <label className="alt-pg__pick"><span>Right</span>
             <select className="alt-pg__select" value={R.id} onChange={(e) => setRightId(e.target.value)}>
-              {OPTIONS.map((o) => <option key={o.id} value={o.id} disabled={o.id === L.id}>Option {o.id}</option>)}
+              {OPTIONS.map((o) => <option key={o.id} value={o.id} disabled={o.id === L.id}>{optTag(o.id)}</option>)}
             </select>
           </label>
         </div>
       ) : (
-        <div className="seg alt-pg__seg" role="radiogroup" aria-label="Option on the map">
+        <div className="seg alt-pg__seg" role="radiogroup" aria-label={`${COPY.alt} on the map`}>
           {OPTIONS.map((o) => (
             <button key={o.id} type="button" role="radio" aria-checked={o.id === option.id} className="seg__btn" onClick={() => choose(o.id)}>
-              <span className="alt-pg__long">Option </span>{o.id}
+              <span className="alt-pg__long">{COPY.altShort} </span>{o.id}
             </button>
           ))}
         </div>
@@ -204,10 +213,10 @@ function Matrix({ current }) {
     <section className="alt-pg__matrix stack" style={{ "--stack": "12px" }} aria-labelledby="alt-matrix">
       <div className="stack" style={{ "--stack": "6px" }}>
         <h2 id="alt-matrix" className="t-h3">At a glance</h2>
-        <Truth kind="illustrative">Illustrative · relative, not modelled</Truth>
+        <Truth kind="source">Source: {PROJECT.agency} {COPY.decisionDoc} · relative scores</Truth>
       </div>
       <table className="alt-pg__table">
-        <caption className="sr-only">Options A, B and C compared on five criteria. Dots rank the options against each other, from one to three.</caption>
+        <caption className="sr-only">{cap(COPY.alts)} {idList()} compared on {MATRIX.length} criteria. Dots rank the {COPY.alts} against each other, from one to three.</caption>
         <thead>
           <tr>
             <td />
@@ -232,7 +241,7 @@ function Matrix({ current }) {
           ))}
         </tbody>
       </table>
-      <p className="t-caption t-muted">Dots compare the three options with each other, not with a standard. Distances are estimated from OpenStreetMap geometry; traffic and travel-time studies come at detailed design.</p>
+      <p className="t-caption t-muted">Dots compare the {COPY.alts} with each other, not with a standard. Each cell paraphrases {PROJECT.agency}'s {COPY.matrixBasis} in the <a className="link" href={SOURCES.decision.url} target="_blank" rel="noreferrer">{COPY.decisionDoc}</a>; the dots are Forma's summary of it.</p>
     </section>
   );
 }

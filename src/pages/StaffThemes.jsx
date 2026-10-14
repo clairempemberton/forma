@@ -4,12 +4,12 @@ import StaffShell from "../components/StaffShell.jsx";
 import MapView from "../map/MapView.jsx";
 import Icon from "../components/Icon.jsx";
 import { Truth, fmtDate } from "../components/ui.jsx";
-import { CAMERA, VERSIONS } from "../data/alder.js";
+import { CAMERA, DECISION, VERSIONS, PROJECT, optName, optTag } from "../data/featured.js";
 import { useParam } from "../lib/useMapMode.js";
 import { useStaffData, themeStats, setResponse, OPTIONS, centreOf, cameraFor, metres, StatusPill } from "./staffData.js";
 import "./staff.css";
 
-// R22 · Theme analysis: what each theme says, where, for which option, and the public answer.
+// R22 · Theme analysis: what each theme says, where, for which alternative, and the public answer.
 export default function StaffThemes() {
   const { comments, responses } = useStaffData();
   const stats = useMemo(() => themeStats(comments), [comments]);
@@ -53,14 +53,14 @@ export default function StaffThemes() {
             initialCamera={{ ...CAMERA.overview, zoom: 18.2 }}
             camera={camera}
             markers={markers}
-            proposal={VERSIONS[1].geojson}
+            proposal={VERSIONS[0].geojson}
             modeSwitch={false}
             hud={false}
             ariaLabel={`Map of comments in the theme ${theme.name}`}
           />
           <div className="sth-maptag glass" aria-live="polite">
             <span className="sf-label">{theme.name}</span>
-            <span className="t-caption t-muted">{theme.list.length} pins over version 2 · exact locations, staff only</span>
+            <span className="t-caption t-muted">{theme.list.length} pins over {optName(DECISION.chosen)} as rated in {VERSIONS[0].label.toLowerCase()} · exact locations, staff only</span>
           </div>
         </div>
 
@@ -80,29 +80,29 @@ function ThemeDetail({ theme, response }) {
   const mine = theme.list.filter((c) => c.mine).length;
 
   // Representative: the comment closest to the centre of the theme's pins, then the next
-  // closest one that names a different option (or none), as a counterpoint.
+  // closest one that names a different alternative (or none), as a counterpoint.
   const reps = useMemo(() => {
     const c = centreOf(theme.list);
     if (!c) return [];
     const ranked = [...theme.list].filter((x) => x.public).sort((a, b) => metres(a.lngLat, c) - metres(b.lngLat, c));
     const first = ranked[0];
     const second = ranked.find((x) => x !== first && (x.option !== first.option || x.sentiment !== first.sentiment));
-    return [first && { c: first, why: "Closest to the centre of this theme's pins" }, second && { c: second, why: second.option !== first.option ? `A different view: ${second.option ? `Option ${second.option}` : "no option named"}` : "A different tone" }].filter(Boolean);
+    return [first && { c: first, why: "Closest to the centre of this theme's pins" }, second && { c: second, why: second.option !== first.option ? `A different view: ${second.option ? `Alternative ${second.option}` : "no alternative named"}` : "A different tone" }].filter(Boolean);
   }, [theme]);
 
-  const options = [...OPTIONS.map((o) => ({ id: o.id, label: `Option ${o.id}` })), { id: "none", label: "None named" }];
+  const options = [...OPTIONS.map((o) => ({ id: o.id, label: optTag(o.id) })), { id: "none", label: "None named" }];
 
   return (
     <section className="staff-card sth-detail" aria-labelledby="sth-h">
       <div>
         <h2 id="sth-h" className="t-h3">{theme.name}</h2>
         <p className="t-caption t-muted">
-          {total} comment{total === 1 ? "" : "s"}{reassigned ? ` · ${reassigned} reassigned by staff` : ""}{mine ? ` · ${mine} from this browser` : ""} · round 1 total {theme.count} (fictional)
+          {total} comment{total === 1 ? "" : "s"}{reassigned ? ` · ${reassigned} reassigned by staff` : ""}{mine ? ` · ${mine} from this browser` : ""} · sample total {theme.count}
         </p>
       </div>
 
       <div className="sth-block">
-        <h3 className="sf-label">Which option comments name</h3>
+        <h3 className="sf-label">Which alternative comments name</h3>
         <div className="sth-bars">
           {options.map((o) => {
             const n = theme.byOption[o.id] || 0;
@@ -115,14 +115,14 @@ function ThemeDetail({ theme, response }) {
             );
           })}
         </div>
-        <p className="t-caption t-muted">Most comments don't name an option; read them as concerns about the place, not votes.</p>
+        <p className="t-caption t-muted">Most comments don't name an alternative; read them as concerns about the place, not votes.</p>
       </div>
 
       <div className="sth-block">
         <div className="sth-resp-head">
           <label className="sf-label" htmlFor="sth-resp">Draft public response</label>
           {!draft && theme.response && (
-            <button type="button" className="btn btn--ghost btn--sm" onClick={() => setDraft(theme.response)}><Icon name="history" />Start from round 1</button>
+            <button type="button" className="btn btn--ghost btn--sm" onClick={() => setDraft(theme.response)}><Icon name="history" />Start from {PROJECT.agency}'s answer</button>
           )}
         </div>
         <textarea id="sth-resp" className="textarea sth-response" value={draft} onChange={(e) => { setDraft(e.target.value); setSaved(""); }} placeholder="What the team heard and what it will do about it. Plain language; no names." />
@@ -151,7 +151,7 @@ function ThemeDetail({ theme, response }) {
             <li key={c.id}>
               <Link className="rowbtn" to={`/staff/triage?c=${c.id}`}>
                 <span className="t-mono t-caption">{c.ref}</span>
-                <span className="rowbtn__main"><span className="t-compact">{c.text}</span><span className="rowbtn__sub">{fmtDate(c.date, { month: "short", day: "numeric" })}{c.option ? ` · Option ${c.option}` : ""}</span></span>
+                <span className="rowbtn__main"><span className="t-compact">{c.text}</span><span className="rowbtn__sub">{fmtDate(c.date, { month: "short", day: "numeric" })}{c.option ? ` · Alt ${c.option}` : ""}</span></span>
                 <StatusPill id={c.status} />
               </Link>
             </li>

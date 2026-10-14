@@ -3,30 +3,32 @@ import { Link } from "react-router-dom";
 import MapView from "../map/MapView.jsx";
 import Icon from "../components/Icon.jsx";
 import { Legend, LEGEND_PROPOSAL, Notice, StatusBadge, Truth, fmtDate } from "../components/ui.jsx";
-import { CAMERA, DECISION, OPTION_BY_ID, PLACE, PROJECT, REVISION_CHANGES, THEMES, THEME_BY_ID, TIMELINE, VERSIONS } from "../data/alder.js";
+import { CAMERA, COPY, DECISION, LEGEND, OPTION_BY_ID, PLACE, PROJECT, REVISION_CHANGES, SOURCES, SURVEY, THEMES, THEME_BY_ID, TIMELINE, VERSIONS, cap, optName } from "../data/featured.js";
 import { useMapMode } from "../lib/useMapMode.js";
 import { CHANGE_STATUS, THEME_STATUS, TOTAL_COMMENTS } from "./outcomes-shared.js";
 import "./outcomes.css";
 
-const OPTION = OPTION_BY_ID[DECISION.chosen];
-const VERSION = VERSIONS.find((v) => v.id === DECISION.version);
-const MADE = REVISION_CHANGES.filter((c) => c.status === "changed");
-const NEXT = TIMELINE.find((t) => t.status === "upcoming");
+// The reasons for the decision live with each project's data (DECISION.why), each tied to the theme it answers.
+const derive = () => ({
+  OPTION: OPTION_BY_ID[DECISION.chosen],
+  VERSION: VERSIONS.find((v) => v.id === DECISION.version),
+  MADE: REVISION_CHANGES.filter((c) => c.status === "changed"),
+  // Documents to list as records: every cited source except the map data.
+  RECORDS: Object.entries(SOURCES).filter(([k]) => k !== "osm").map(([, s]) => s),
+});
 
-// The three reasons the decision text gives, each tied to the theme it answers.
-const WHY = [
-  { title: "It shortens the crossings people raised most", theme: "T-CROSS" },
-  { title: "It keeps loading on 8th", theme: "T-LOADING" },
-  { title: "It adds the bus shelter", theme: "T-TRANSIT" },
-];
+const decisionLink = (label = SOURCES.decision.title) => (
+  <a className="link" href={SOURCES.decision.url} target="_blank" rel="noreferrer">{label}<Icon name="external" /><span className="sr-only">(opens in a new tab)</span></a>
+);
 
 const SECTIONS = [
   { id: "dcs-summary", label: "Summary" },
   { id: "dcs-why", label: "Why" },
+  { id: "dcs-survey", label: "Who rated it" },
   { id: "dcs-plan", label: "The chosen plan" },
   { id: "dcs-not", label: "Not adopted" },
   { id: "dcs-themes", label: "Every theme, answered" },
-  { id: "dcs-open", label: "Still unresolved" },
+  { id: "dcs-open", label: "Left open" },
   { id: "dcs-timeline", label: "Timeline" },
 ];
 
@@ -37,8 +39,9 @@ const scrollTo = (id) => {
   el.focus({ preventScroll: true });
 };
 
-// R17 · Decision report — the public record of the round 1 decision.
+// R17 · Decision report — a plain-language summary of the agency's decision.
 export default function Decision() {
+  const { OPTION, VERSION, MADE, RECORDS } = useMemo(derive, []);
   const [mode, setMode] = useMapMode();
   const [active, setActive] = useState(SECTIONS[0].id);
 
@@ -59,7 +62,7 @@ export default function Decision() {
   return (
     <main id="main" tabIndex={-1} className="dcs">
       <div className="dcs__banner" role="note">
-        <div className="wrap"><Icon name="alert" /><span><strong>This record is fictional.</strong> The project, committee and decision are a demonstration. {PLACE.name} is a real corner, and nothing here records a real approval.</span></div>
+        <div className="wrap"><Icon name="info" /><span><strong>Unofficial concept · summarising {PROJECT.agency}'s {COPY.decisionDoc} ({fmtDate(DECISION.date, { month: "short", year: "numeric" })}).</strong> {decisionLink("Read the original")}</span></div>
       </div>
 
       <div className="wrap dcs__layout">
@@ -82,34 +85,35 @@ export default function Decision() {
           <header id="dcs-summary" tabIndex={-1} className="dcs__head">
             <div className="row dcs__meta">
               <StatusBadge tone="ink">{DECISION.status}</StatusBadge>
-              <span className="t-caption t-muted">{fmtDate(DECISION.date)}</span>
+              <span className="t-caption t-muted">{fmtDate(DECISION.date, { month: "long", year: "numeric" })}</span>
               <span className="t-caption t-muted">·</span>
               <span className="t-caption t-muted">{PROJECT.title}</span>
             </div>
-            <h1 className="t-h1 dcs__title">Option {OPTION.id}, revised as {VERSION.label.toLowerCase()}, goes forward</h1>
+            <h1 className="t-h1 dcs__title">{DECISION.headline}</h1>
             <p className="dcs__lede">{DECISION.body}</p>
-            <Truth kind="illustrative">Fictional decision · {PROJECT.team}</Truth>
+            <Truth kind="source">Source: {PROJECT.team}, {SOURCES.decision.title}</Truth>
           </header>
 
           <dl className="dcs__stats">
-            <div className="dcs__stat"><dt>Chosen</dt><dd>Option {OPTION.id} · {OPTION.name}</dd></div>
-            <div className="dcs__stat"><dt>Changes from comments</dt><dd><span className="t-num">{MADE.length}</span> <span className="dcs__of">of {REVISION_CHANGES.length} asked for</span></dd></div>
-            <div className="dcs__stat"><dt>Themes with a public response</dt><dd><span className="t-num">{THEMES.length}</span> <span className="dcs__of">of {THEMES.length}</span></dd></div>
-            <div className="dcs__stat"><dt>{NEXT.title}</dt><dd>{fmtDate(NEXT.date)}</dd></div>
+            <div className="dcs__stat"><dt>Chosen</dt><dd>{optName(OPTION.id)} · {OPTION.name}</dd></div>
+            <div className="dcs__stat"><dt>Rated in {COPY.round}</dt><dd><span className="t-num">{SURVEY.total.toLocaleString("en-US")}</span> <span className="dcs__of">people</span></dd></div>
+            <div className="dcs__stat"><dt>Requests acted on after {COPY.round}</dt><dd><span className="t-num">{MADE.length}</span> <span className="dcs__of">of {REVISION_CHANGES.length}</span></dd></div>
+            <div className="dcs__stat"><dt>Budget</dt><dd>{PROJECT.budget}</dd></div>
           </dl>
 
           <section id="dcs-why" tabIndex={-1} className="dcs__section" aria-labelledby="dcs-why-h">
             <h2 id="dcs-why-h" className="t-h2">Why</h2>
-            <p className="t-body t-muted measure">Of the three options, Option {OPTION.id} answered the most-raised concerns without removing loading access. The decision gives three reasons, each tied to a theme from round 1.</p>
+            <p className="t-body t-muted measure">{DECISION.whyLead}</p>
             <ol className="dcs__why">
-              {WHY.map((w, i) => {
-                const t = THEME_BY_ID[w.theme];
+              {DECISION.why.map((w, i) => {
+                const t = w.theme && THEME_BY_ID[w.theme];
                 return (
-                  <li key={w.theme}>
+                  <li key={w.title}>
                     <span className="dcs__why-n" aria-hidden="true">{i + 1}</span>
                     <div>
                       <h3 className="t-h3">{w.title}</h3>
-                      <p className="t-compact t-muted">{t.response} <Link className="link" to={`../themes?t=${t.id}`}>{t.name} · {t.count} comments</Link></p>
+                      {w.detail && <p className="t-compact"><strong>{w.detail}</strong></p>}
+                      <p className="t-compact t-muted">{w.body} {t && <Link className="link" to={`../themes?t=${t.id}`}>{t.short} · {t.count} sample comments</Link>}</p>
                     </div>
                   </li>
                 );
@@ -127,27 +131,60 @@ export default function Decision() {
             </div>
           </section>
 
+          <section id="dcs-survey" tabIndex={-1} className="dcs__section" aria-labelledby="dcs-survey-h">
+            <div className="dcs__section-head">
+              <h2 id="dcs-survey-h" className="t-h2">Who rated the {COPY.alts}</h2>
+              <Truth kind="source" />
+            </div>
+            <p className="t-body t-muted measure">{SURVEY.lead}</p>
+            <div className="table-wrap">
+              <table className="table dcs__table">
+                <caption className="sr-only">{SURVEY.caption}</caption>
+                <thead>
+                  <tr>{SURVEY.columns.map((c) => <th key={c} scope="col">{c}</th>)}</tr>
+                </thead>
+                <tbody>
+                  {SURVEY.groups.map((g) => (
+                    <tr key={g.label}>
+                      <th scope="row">{g.label}</th>
+                      <td className="t-num">{g.respondents.toLocaleString("en-US")}</td>
+                      <td>{g.result ?? `${optName(g.preferred)} · ${OPTION_BY_ID[g.preferred]?.short}`}</td>
+                    </tr>
+                  ))}
+                  {SURVEY.totalRow !== false && (
+                    <tr>
+                      <th scope="row">Total</th>
+                      <td className="t-num"><strong>{SURVEY.total.toLocaleString("en-US")}</strong></td>
+                      <td>{SURVEY.totalResult ?? `${optName(DECISION.chosen)} overall`}</td>
+                    </tr>
+                  )}
+                </tbody>
+              </table>
+            </div>
+            <p className="t-compact t-muted measure">{SURVEY.note}</p>
+          </section>
+
           <section id="dcs-plan" tabIndex={-1} className="dcs__section" aria-labelledby="dcs-plan-h">
             <div className="dcs__section-head">
               <h2 id="dcs-plan-h" className="t-h2">The chosen plan</h2>
-              <Link className="link" to="../revision">Compare with version 1<Icon name="arrowRight" /></Link>
+              <Link className="link" to="../revision">Compare with the {COPY.round} version<Icon name="arrowRight" /></Link>
             </div>
             <figure className="dcs__map">
               <div className="dcs__map-frame">
                 <MapView
                   mode={mode}
                   onModeChange={setMode}
-                  initialCamera={{ ...CAMERA.home, zoom: 18.4 }}
+                  initialCamera={CAMERA.home}
                   proposal={VERSION.geojson}
                   markers={markers}
                   hud={false}
-                  legend={<Legend items={LEGEND_PROPOSAL.filter((l) => l.swatch !== "comment" && l.swatch !== "feature")} />}
-                  ariaLabel={`Map of Option ${OPTION.id}, ${VERSION.label}, at ${PLACE.name}`}
+                  legend={<Legend items={(LEGEND || LEGEND_PROPOSAL).filter((l) => l.swatch !== "comment" && l.swatch !== "feature")} />}
+                  ariaLabel={`Map of ${optName(OPTION.id)}, ${VERSION.label.toLowerCase()}, on ${PLACE.name}`}
                 />
               </div>
               <figcaption className="dcs__map-cap">
-                <span>Option {OPTION.id} · {OPTION.name}, {VERSION.label.toLowerCase()} ({fmtDate(VERSION.date)}). Numbered rings are the changes made after round 1; change 4 was not made.</span>
-                <Truth kind="illustrative">Concept, not for construction</Truth>
+                <span>{optName(OPTION.id)} · {OPTION.name}, {VERSION.label.toLowerCase()} ({fmtDate(VERSION.date, { month: "long", year: "numeric" })}). Numbered rings are the requests {PROJECT.agency} weighed after {COPY.round}; dimmed rings were not adopted.</span>
+                <Truth kind="illustrative" />
               </figcaption>
               <ul className="dcs__map-print">
                 {OPTION.changes.map((c) => <li key={c}>{c}</li>)}
@@ -171,13 +208,13 @@ export default function Decision() {
           <section id="dcs-themes" tabIndex={-1} className="dcs__section" aria-labelledby="dcs-themes-h">
             <div className="dcs__section-head">
               <h2 id="dcs-themes-h" className="t-h2">Every theme, answered</h2>
-              <Truth kind="sample">Fictional counts · n = {TOTAL_COMMENTS}</Truth>
+              <Truth kind="sample">Sample counts · n = {TOTAL_COMMENTS}</Truth>
             </div>
             <div className="table-wrap">
               <table className="table dcs__table">
-                <caption className="sr-only">Which themes from round 1 shaped which changes in version 2</caption>
+                <caption className="sr-only">Themes {PROJECT.agency} reported hearing, and which refinements to {optName(OPTION.id)} they shaped</caption>
                 <thead>
-                  <tr><th scope="col">Theme</th><th scope="col">Comments</th><th scope="col">Outcome</th><th scope="col">What it shaped</th></tr>
+                  <tr><th scope="col">Theme</th><th scope="col">Sample comments</th><th scope="col">Outcome</th><th scope="col">What it shaped</th></tr>
                 </thead>
                 <tbody>
                   {THEMES.map((t) => {
@@ -209,17 +246,20 @@ export default function Decision() {
 
           <section id="dcs-open" tabIndex={-1} className="dcs__section dcs__split" aria-labelledby="dcs-open-h">
             <div className="card card--pad">
-              <h2 id="dcs-open-h" className="t-h3">Still unresolved</h2>
+              <h2 id="dcs-open-h" className="t-h3">Left open in the decision</h2>
               <ul className="dcs__open">
                 {DECISION.unresolved.map((u) => <li key={u}><Icon name="clock" />{u}</li>)}
-                {REVISION_CHANGES.filter((c) => c.status !== "changed").map((c) => <li key={c.id}><Icon name="clock" />{c.title}: {c.after.replace(/^Still not included — /, "not included; ")}</li>)}
+                {REVISION_CHANGES.filter((c) => c.status !== "changed").map((c) => <li key={c.id}><Icon name="clock" />{c.title}: {c.after}</li>)}
               </ul>
             </div>
             <div className="card card--pad">
               <h2 className="t-h3">Records</h2>
               <ul className="dcs__docs">
-                <li><Link to="../themes"><Icon name="comment" /><span>What we heard: six themes and responses</span><Icon name="arrowRight" /></Link></li>
-                <li><Link to="../revision"><Icon name="swap" /><span>Version 1 and version 2, compared</span><Icon name="arrowRight" /></Link></li>
+                {RECORDS.map((s) => (
+                  <li key={s.url}><a href={s.url} target="_blank" rel="noreferrer"><Icon name="doc" /><span>{s.title} ({s.date})<span className="sr-only"> (opens in a new tab)</span></span><Icon name="external" /></a></li>
+                ))}
+                <li><Link to="../themes"><Icon name="comment" /><span>What we heard: {THEMES.length} themes and responses</span><Icon name="arrowRight" /></Link></li>
+                <li><Link to="../revision"><Icon name="swap" /><span>{cap(COPY.round)} and refined {optName(OPTION.id)}, compared</span><Icon name="arrowRight" /></Link></li>
                 <li><Link to="../text"><Icon name="text" /><span>Text-only version of the proposal</span><Icon name="arrowRight" /></Link></li>
                 <li><button type="button" onClick={() => window.print()}><Icon name="doc" /><span>Print this record</span><Icon name="arrowRight" /></button></li>
               </ul>
@@ -236,7 +276,7 @@ export default function Decision() {
                 <li key={t.title} className="timeline__item" data-status={t.status}>
                   <span className="timeline__dot" aria-hidden="true" />
                   <div className="dcs__tl">
-                    <p className="t-caption t-muted t-num">{fmtDate(t.date)}{t.status === "current" && " · now"}{t.status === "upcoming" && " · planned"}</p>
+                    <p className="t-caption t-muted t-num">{fmtDate(t.date, { month: "short", year: "numeric" })}{t.status === "current" && " · next"}{t.status === "upcoming" && " · planned"}</p>
                     <p className="dcs__tl-title">{t.title}</p>
                     <p className="t-compact t-muted">{t.body}</p>
                   </div>
@@ -245,7 +285,7 @@ export default function Decision() {
             </ol>
           </section>
 
-          <Notice tone="warning" icon="alert">This record is fictional. It shows how Forma publishes a decision; no committee met and nothing was approved.</Notice>
+          <Notice icon="info">Forma is an unofficial concept, not affiliated with {PROJECT.agency}. This page summarises the {decisionLink(COPY.decisionDoc)}; read the original for {PROJECT.agency}'s full reasoning.</Notice>
         </article>
       </div>
     </main>

@@ -3,7 +3,7 @@ import { Link } from "react-router-dom";
 import StaffShell from "../components/StaffShell.jsx";
 import Icon from "../components/Icon.jsx";
 import { Notice, Truth, fmtDate } from "../components/ui.jsx";
-import { PROJECT, VERSIONS, REVISION_CHANGES, THEMES } from "../data/alder.js";
+import { DECISION, PROJECT, VERSIONS, REVISION_CHANGES, THEMES, PROJECT_BASE, optName } from "../data/featured.js";
 import { setState } from "../lib/store.js";
 import { useStaffData, publishChecks, publicSet, setResponse, DECISION_BY_ID } from "./staffData.js";
 import "./staff.css";
@@ -22,10 +22,10 @@ export default function StaffPublish() {
   const dlg = useRef(null);
   const [status, setStatus] = useState("");
 
-  const fillFromRound1 = () => {
+  const fillFromPbot = () => {
     const empty = THEMES.filter((t) => !(responses[t.id] || "").trim());
     empty.forEach((t) => setResponse(t.id, t.response));
-    setStatus(`Round 1 answers copied into ${empty.length} empty theme${empty.length === 1 ? "" : "s"}. Edit them on the Themes page.`);
+    setStatus(`${PROJECT.agency}'s published answers copied into ${empty.length} empty theme${empty.length === 1 ? "" : "s"}. Edit them on the Themes page.`);
   };
   const confirm = () => {
     setState({ published: true, publishedAt: new Date().toISOString() });
@@ -46,7 +46,7 @@ export default function StaffPublish() {
       <div className="sf-live" role="status" aria-live="polite">
         {published ? (
           <Notice tone="positive" icon="check">
-            <strong>Update published {publishedAt ? fmtDate(publishedAt.slice(0, 10)) : ""} (demo).</strong> Nothing left this browser. In a real deployment, followers of {PROJECT.title} would get one email and the public page would show the responses below. <Link className="link" to="/projects/alder-8th/updates">See the public Updates page</Link>
+            <strong>Update published {publishedAt ? fmtDate(publishedAt.slice(0, 10)) : ""} (demo).</strong> Nothing left this browser. In a real deployment, followers of {PROJECT.title} would get one email and the public page would show the responses below. <Link className="link" to={`${PROJECT_BASE}/updates`}>See the public Updates page</Link>
           </Notice>
         ) : status && <Notice tone="accent" icon="info">{status}</Notice>}
       </div>
@@ -72,7 +72,7 @@ export default function StaffPublish() {
                   )}
                   {!c.ok && (
                     <div className="row sp-check__fix">
-                      {c.id === "responses" && <button type="button" className="btn btn--secondary btn--sm" onClick={fillFromRound1}>Copy round 1 answers into empty themes</button>}
+                      {c.id === "responses" && <button type="button" className="btn btn--secondary btn--sm" onClick={fillFromPbot}>Copy {PROJECT.agency}'s answers into empty themes</button>}
                       {c.fix && <Link className="btn btn--ghost btn--sm" to={c.fix.to}>{c.fix.label}<Icon name="arrowRight" /></Link>}
                     </div>
                   )}
@@ -100,7 +100,7 @@ export default function StaffPublish() {
 
           <article className="sp-page" aria-label="Preview of the public update">
             <p className="t-eyebrow">Update · {PROJECT.round}</p>
-            <h3 className="t-h2">What changed in {VERSIONS[1].label.toLowerCase()}</h3>
+            <h3 className="t-h2">How {optName(DECISION.chosen)} was refined</h3>
             <p className="t-compact t-muted">{VERSIONS[1].note} Posted when published.</p>
             <ol className="sp-page__changes">
               {REVISION_CHANGES.map((r, i) => (

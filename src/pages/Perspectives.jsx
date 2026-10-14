@@ -3,16 +3,16 @@ import { Link, useNavigate } from "react-router-dom";
 import MapView from "../map/MapView.jsx";
 import Icon from "../components/Icon.jsx";
 import { FeatureId, Truth, fmtDate } from "../components/ui.jsx";
-import { CAMERA, F, OPTION_BY_ID, SAMPLE_COMMENTS, THEMES, THEME_BY_ID } from "../data/alder.js";
+import { CAMERA, COPY, DECISION, F, OPTIONS, OPTION_BY_ID, PROJECT, PROJECT_BASE, SAMPLE_COMMENTS, SOURCES, SURVEY, THEMES, THEME_BY_ID, cap, optName, optTag } from "../data/featured.js";
 import { distanceMeters } from "../lib/geo.js";
 import { useMapMode, useParam } from "../lib/useMapMode.js";
 import { useIsMobile, prefersReducedMotion } from "../lib/motion.js";
 import { useStore } from "../lib/store.js";
-import { THEME_ICON, THEME_SHORT, themeName, nearestFeature, optionLabel, sentimentLabel } from "./participate-shared.jsx";
+import { themeIcon, themeShort, themeName, nearestFeature, optionLabel, sentimentLabel } from "./participate-shared.jsx";
 import "./participate.css";
 
-const OPTION_FILTERS = [
-  { id: "all", label: "All" }, { id: "A", label: "A" }, { id: "B", label: "B" }, { id: "C", label: "C" }, { id: "general", label: "General" },
+const optionFilters = () => [
+  { id: "all", label: "All" }, ...OPTIONS.map((o) => ({ id: o.id, label: o.id, option: true })), { id: "general", label: "General" },
 ];
 const SENTIMENT_FILTERS = [
   { id: "all", label: "All" }, { id: "concern", label: "Concerns" }, { id: "support", label: "Support" }, { id: "idea", label: "Ideas" },
@@ -44,7 +44,7 @@ export default function Perspectives() {
     ...SAMPLE_COMMENTS,
   ], [mine, triage]);
 
-  // Option and sentiment filters hide; the theme filter highlights ("connected feedback").
+  // Alternative and sentiment filters hide; the theme filter highlights ("connected feedback").
   const visible = useMemo(() => all.filter((c) => {
     if (opt !== "all" && (opt === "general" ? c.option && c.option !== "general" && c.option !== "today" : c.option !== opt)) return false;
     if (sent !== "all" && (c.sentiment || "concern") !== sent) return false;
@@ -116,9 +116,9 @@ export default function Perspectives() {
       <section className="map-page__panel" aria-labelledby="persp-title">
         <div className="map-page__scroll stack" style={{ "--stack": "22px" }}>
           <div className="stack" style={{ "--stack": "8px" }}>
-            <p className="t-eyebrow">Round 1 comments · on the map</p>
+            <p className="t-eyebrow">{cap(COPY.round)} replay · {SURVEY.window}</p>
             <h1 id="persp-title" className="t-h2">Community perspectives</h1>
-            <p className="t-compact t-muted">Where people described what works and what doesn't. Comments aren't votes, so nothing here is ranked or liked.</p>
+            <p className="t-compact t-muted">How place-based comments on {COPY.placeShort} could look, using sample comments. Comments aren't votes, so nothing here is ranked or liked.</p>
             <Truth kind="sample" />
           </div>
 
@@ -127,7 +127,7 @@ export default function Perspectives() {
             <div className="pt-chips">
               {THEMES.map((t) => (
                 <button key={t.id} type="button" className="chip pt-chip" aria-pressed={theme === t.id} onClick={() => { setTheme(theme === t.id ? null : t.id); }}>
-                  {theme === t.id && <Icon name="check" />}{THEME_SHORT[t.id]}<span className="count">{counts[t.id]}</span>
+                  {theme === t.id && <Icon name="check" />}{themeShort(t.id)}<span className="count">{counts[t.id]}</span>
                 </button>
               ))}
             </div>
@@ -139,7 +139,7 @@ export default function Perspectives() {
                 <span className="t-eyebrow">Connected feedback</span>
                 <button type="button" className="btn btn--ghost btn--sm" onClick={() => setTheme(null)}>Clear</button>
               </div>
-              <p className="t-compact"><strong>{counts[activeTheme.id]} comments</strong> on this map are about “{activeTheme.name.toLowerCase()}”. They're highlighted; the rest are dimmed.</p>
+              <p className="t-compact"><strong>{counts[activeTheme.id]} sample comments</strong> on this map are about “{activeTheme.name.toLowerCase()}”. They're highlighted; the rest are dimmed.</p>
               <ThemeResponse t={activeTheme} />
             </div>
           )}
@@ -147,8 +147,8 @@ export default function Perspectives() {
           <div className="pt-filter">
             <p className="pt-filter__label" id="opt-label">About</p>
             <div className="seg pt-seg" role="radiogroup" aria-labelledby="opt-label">
-              {OPTION_FILTERS.map((o) => (
-                <button key={o.id} type="button" role="radio" aria-checked={opt === o.id} className="seg__btn" onClick={() => setOpt(o.id)}>{o.label === "A" || o.label === "B" || o.label === "C" ? <><span className="sr-only">Option </span>{o.label}</> : o.label}</button>
+              {optionFilters().map((o) => (
+                <button key={o.id} type="button" role="radio" aria-checked={opt === o.id} className="seg__btn" onClick={() => setOpt(o.id)}>{o.option ? <><span className="sr-only">{COPY.alt} </span>{o.label}</> : o.label}</button>
               ))}
             </div>
           </div>
@@ -182,7 +182,7 @@ export default function Perspectives() {
                         <span className={`pt-dot ${c.mine ? "pt-dot--mine" : ""}`} aria-hidden="true" />
                         <span className="rowbtn__main">
                           <span className="pt-row__text">{c.text}</span>
-                          <span className="rowbtn__sub">{c.mine ? "Yours · " : ""}{themeName(c.theme)} · {fmtDate(c.date, { month: "short", day: "numeric" })}{c.option ? ` · Option ${c.option}` : ""}</span>
+                          <span className="rowbtn__sub">{c.mine ? "Yours · " : ""}{themeName(c.theme)} · {fmtDate(c.date, { month: "short", day: "numeric" })}{c.option ? ` · ${optTag(c.option)}` : ""}</span>
                         </span>
                       </button>
                     </li>
@@ -197,7 +197,7 @@ export default function Perspectives() {
         <div className="map-page__foot">
           <span className="t-caption t-muted">{yours > 0 ? `${yours} of yours · ` : ""}{totalSample} sample comments</span>
           <span className="spacer" />
-          <button type="button" className="btn btn--accent" onClick={() => navigate(selected ? `/projects/alder-8th/feedback?at=${selected.lngLat.map((v) => v.toFixed(6)).join(",")}` : "/projects/alder-8th/feedback")}>
+          <button type="button" className="btn btn--accent" onClick={() => navigate(selected ? `${PROJECT_BASE}/feedback?at=${selected.lngLat.map((v) => v.toFixed(6)).join(",")}` : `${PROJECT_BASE}/feedback`)}>
             <Icon name="plus" />Add yours
           </button>
         </div>
@@ -220,8 +220,8 @@ export default function Perspectives() {
         >
           <div className="map-chip glass" aria-live="polite">
             <Icon name="comment" /><strong className="t-num">{visible.length}</strong> comments
-            {activeTheme && <> · <span className="pt-chip-theme">{THEME_SHORT[activeTheme.id]}</span></>}
-            {OPTION_BY_ID[opt] && <> · Option {opt}</>}
+            {activeTheme && <> · <span className="pt-chip-theme">{themeShort(activeTheme.id)}</span></>}
+            {OPTION_BY_ID[opt] && <> · {optTag(opt)}</>}
           </div>
           {selected && (
             <CommentPanel
@@ -246,13 +246,13 @@ function ThemeResponse({ t, compact = false }) {
     <div className={`pt-response ${compact ? "pt-response--compact" : ""}`}>
       <div className="row" style={{ gap: 8, flexWrap: "wrap" }}>
         <Icon name="check" className="pt-response__icon" />
-        <span className="pt-response__title">Project team response</span>
+        <span className="pt-response__title">{PROJECT.agency}'s response</span>
         <span className={`badge ${tone ? `badge--${tone}` : ""}`}>{label}</span>
       </div>
       <p className="t-compact">{t.response}</p>
       <div className="row" style={{ justifyContent: "space-between", flexWrap: "wrap" }}>
-        <Link className="link t-caption" to="/projects/alder-8th/revision">See what changed in version 2<Icon name="arrowRight" /></Link>
-        <Truth kind="illustrative">Fictional response</Truth>
+        <Link className="link t-caption" to={`${PROJECT_BASE}/revision`}>How {optName(DECISION.chosen)} was refined<Icon name="arrowRight" /></Link>
+        <Truth kind="source">Source: <a className="link" href={SOURCES.decision.url} target="_blank" rel="noreferrer">{PROJECT.agency} {COPY.decisionDoc}<span className="sr-only"> (opens in a new tab)</span></a></Truth>
       </div>
     </div>
   );
@@ -271,7 +271,7 @@ function CommentPanel({ c, near, related, group, onSelect, onClose }) {
       </div>
 
       <div className="pt-badges">
-        <span className="badge badge--voice">{t && <Icon name={THEME_ICON[t.id]} />}{themeName(c.theme)}</span>
+        <span className="badge badge--voice">{t && <Icon name={themeIcon(t.id)} />}{themeName(c.theme)}</span>
         <span className="badge badge--outline badge--plain">{optionLabel(c.option).split(" · ")[0]}</span>
         <span className="badge badge--outline badge--plain">{sentimentLabel(c.sentiment)}</span>
       </div>
@@ -325,7 +325,7 @@ function CommentLegend() {
         <li><span className="legend__sw legend__sw--comment" aria-hidden="true" />Resident comment (sample)</li>
         <li><span className="legend__sw legend__sw--comment pt-sw-mine" aria-hidden="true" />Your comment</li>
         <li><span className="pt-sw-cluster" aria-hidden="true">3</span>Several comments · select to zoom</li>
-        <li><span className="legend__sw legend__sw--proposed" aria-hidden="true" />Proposed change (when an option is chosen)</li>
+        <li><span className="legend__sw legend__sw--proposed" aria-hidden="true" />{COPY.alt} drawing (when one is chosen)</li>
       </ul>
     </div>
   );

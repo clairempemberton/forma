@@ -4,7 +4,7 @@ import { addOverlays, setData, setVisible, LAYER_GROUPS } from "./overlays.js";
 import { ENGINE, HAS_MAPBOX } from "../lib/env.js";
 import { flyDuration, prefersReducedMotion } from "../lib/motion.js";
 import { clusterPoints } from "../lib/cluster.js";
-import { BOUNDARY, CAMERA } from "../data/alder.js";
+import { BOUNDARY, CAMERA, COPY, OSM, PROJECT, PROJECT_BASE } from "../data/featured.js";
 import ModeSwitch from "./ModeSwitch.jsx";
 import MapControls from "./MapControls.jsx";
 import MapHud from "./MapHud.jsx";
@@ -14,8 +14,9 @@ import "./map.css";
 
 const StreetView = lazy(() => import("./StreetView.jsx"));
 
-let osmPromise;
-const loadOsm = () => (osmPromise ??= import("../data/osm-existing.json").then((m) => m.default ?? m));
+// One OSM existing-conditions file per project, loaded once.
+const osmCache = {};
+const loadOsm = () => (osmCache[PROJECT.id] ??= OSM().then((m) => m.default ?? m));
 
 /**
  * The single map surface used across Forma. One map instance per MapView; switching
@@ -46,7 +47,7 @@ export default function MapView({
   streetContext,
   onReady,
   onCameraChange,
-  ariaLabel = "Map of SE Alder St and SE 8th Ave, Portland",
+  ariaLabel = COPY.mapLabel,
   className = "",
   children,
 }) {
@@ -153,7 +154,7 @@ export default function MapView({
           const p = propsRef.current;
           if (p.picking) { p.picking.onChange([ev.lngLat.lng, ev.lngLat.lat]); return; }
           if (!p.onSelectProposal) return;
-          const hits = map.queryRenderedFeatures(ev.point, { layers: ["f-prop-fill", "f-prop-outline", "f-prop-3d", "f-prop-tree", "f-prop-circle"].filter((id) => map.getLayer(id)) });
+          const hits = map.queryRenderedFeatures(ev.point, { layers: ["f-prop-fill", "f-prop-outline", "f-prop-3d", "f-prop-tree", "f-prop-circle", "f-prop-element", "f-prop-park"].filter((id) => map.getLayer(id)) });
           const id = hits.find((h) => h.properties?.id)?.properties.id;
           if (id) p.onSelectProposal(id);
         });
@@ -355,7 +356,7 @@ function MapError({ error }) {
             ? "Check VITE_MAPBOX_ACCESS_TOKEN in .env.local and that its URL restrictions allow this site."
             : "Everything on the map is also described in words."}
         </p>
-        <a className="btn btn--secondary btn--sm" href="#/projects/alder-8th/text">Open the text-only version</a>
+        <a className="btn btn--secondary btn--sm" href={`#${PROJECT_BASE}/text`}>Open the text-only version</a>
       </div>
     </div>
   );

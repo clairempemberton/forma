@@ -1,8 +1,9 @@
 import { NavLink, Link } from "react-router-dom";
 import Icon from "./Icon.jsx";
 import { Logo } from "./ui.jsx";
-import { SAMPLE_COMMENTS, PROJECT } from "../data/alder.js";
+import { SAMPLE_COMMENTS, PROJECT } from "../data/featured.js";
 import { useStore } from "../lib/store.js";
+import ProjectSwitch from "./ProjectSwitch.jsx";
 
 const NAV = [
   { to: "/staff", label: "Overview", icon: "grid", end: true },
@@ -20,6 +21,7 @@ export default function StaffShell({ children, title, actions }) {
     <div className="staff">
       <aside className="staff__side" aria-label="Staff workspace">
         <div className="staff__brand"><Logo to="/staff" /></div>
+        <ProjectSwitch label="Project in this workspace" />
         <nav className="staff__nav">
           {NAV.map((n) => (
             <NavLink key={n.to} to={n.to} end={n.end} className="staff__link">
@@ -36,16 +38,16 @@ export default function StaffShell({ children, title, actions }) {
       <div className="staff__main">
         <header className="staff__top">
           <span className="badge badge--ink badge--plain">Staff workspace</span>
-          <span className="t-compact t-muted staff__crumb">Eastside Streets <Icon name="chevronRight" /> <strong>{PROJECT.title}</strong></span>
+          <span className="t-compact t-muted staff__crumb">{PROJECT.agency} <Icon name="chevronRight" /> <strong>{PROJECT.title}</strong></span>
           <div className="spacer" />
           <span className="badge badge--warning">Demo data</span>
-          <span className="staff__user"><span className="avatar" aria-hidden="true">JR</span><span className="t-caption"><strong>J. Rivera</strong><br /><span className="t-muted">Planner · Editor (fictional)</span></span></span>
+          <span className="staff__user"><span className="avatar" aria-hidden="true">JR</span><span className="t-caption"><strong>J. Rivera</strong><br /><span className="t-muted">Planner · Editor (sample user)</span></span></span>
         </header>
         <main id="main" className="staff__content">
           {(title || actions) && (
             <div className="staff__head">
               <div>
-                <p className="t-caption t-muted t-mono">ES-2026-014 · Buckman</p>
+                <p className="t-caption t-muted t-mono">{PROJECT.round} · {PROJECT.place.neighborhood}</p>
                 <h1 className="t-h1">{title}</h1>
               </div>
               <div className="row">{actions}</div>

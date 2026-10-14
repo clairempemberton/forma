@@ -1,35 +1,26 @@
 // Shared pieces for the community perspectives screens and the three-step feedback flow.
 import { Link } from "react-router-dom";
 import Icon from "../components/Icon.jsx";
-import { EXISTING_FEATURES, F, ORIGIN, THEME_BY_ID, OPTION_BY_ID } from "../data/alder.js";
+import { EXISTING_FEATURES, ORIGIN, THEME_BY_ID, OPTIONS, OPTION_BY_ID, describePlace, optName, optTag } from "../data/featured.js";
 import { distanceMeters } from "../lib/geo.js";
 import { Steps } from "../components/ui.jsx";
 import MapView from "../map/MapView.jsx";
 import { useMemo } from "react";
 
-export const PROJECT_BASE = "/projects/alder-8th";
+export { PROJECT_BASE } from "../data/featured.js";
 
 // Short names for the theme chips; the full name is the theme's `name`.
-export const THEME_SHORT = {
-  "T-CROSS": "Crossing safety",
-  "T-ACCESS": "Curb ramps",
-  "T-BIKE": "Bike connection",
-  "T-LOADING": "Loading",
-  "T-SHADE": "Shade and trees",
-  "T-TRANSIT": "Bus stop",
-};
-export const THEME_ICON = { "T-CROSS": "walk", "T-ACCESS": "access", "T-BIKE": "bike", "T-LOADING": "truck", "T-SHADE": "tree", "T-TRANSIT": "bus" };
-export const themeName = (id, short = true) => (id && THEME_BY_ID[id] ? (short ? THEME_SHORT[id] : THEME_BY_ID[id].name) : "Something else");
+export const themeShort = (id) => THEME_BY_ID[id]?.short;
+export const themeIcon = (id) => THEME_BY_ID[id]?.icon;
+export const themeName = (id, short = true) => (id && THEME_BY_ID[id] ? (short ? THEME_BY_ID[id].short : THEME_BY_ID[id].name) : "Something else");
 
-export const OPTION_CHOICES = [
+export const optionChoices = () => [
   { id: "today", label: "Today" },
-  { id: "A", label: "Option A" },
-  { id: "B", label: "Option B" },
-  { id: "C", label: "Option C" },
+  ...OPTIONS.map((o) => ({ id: o.id, label: optTag(o.id) })),
   { id: "general", label: "General" },
 ];
 // Stored as null (general), "today", or an option id.
-export const optionLabel = (o) => (o == null || o === "general" ? "General" : o === "today" ? "Today's corner" : `Option ${o}${OPTION_BY_ID[o] ? ` · ${OPTION_BY_ID[o].short}` : ""}`);
+export const optionLabel = (o) => (o == null || o === "general" ? "General" : o === "today" ? "Today's street" : `${optName(o)}${OPTION_BY_ID[o] ? ` · ${OPTION_BY_ID[o].short}` : ""}`);
 
 export const SENTIMENTS = [
   { id: "concern", label: "A concern", short: "Concern", icon: "alert", hint: "Something here worries you or gets in your way." },
@@ -50,18 +41,8 @@ export function nearestFeature(lngLat) {
 
 export const distanceFromCorner = (lngLat) => distanceMeters(lngLat, ORIGIN);
 
-// A plain-language name for a spot, from its position relative to the corner.
-export function describePlace(lngLat) {
-  if (!lngLat) return "No location yet";
-  const [x, y] = F.toLocal(lngLat);
-  const d = Math.hypot(x, y);
-  if (d < 4) return "Middle of the intersection";
-  if (Math.abs(x) < 15 && Math.abs(y) < 15) return `${y >= 0 ? "North" : "South"}${x >= 0 ? "east" : "west"} corner of Alder & 8th`;
-  if (Math.abs(y) <= 9) return `SE Alder St, ${x > 0 ? "east" : "west"} of 8th`;
-  if (Math.abs(x) <= 9) return `SE 8th Ave, ${y > 0 ? "north" : "south"} of Alder`;
-  if (y < -45) return "Toward SE Morrison St";
-  return `${y >= 0 ? "North" : "South"}${x >= 0 ? "east" : "west"} block, ${Math.round(d)} m from the corner`;
-}
+// A plain-language name for a spot, from the featured place.
+export { describePlace };
 
 export const fmtMeters = (m) => (m < 1 ? "under 1 m" : `${Math.round(m)} m`);
 

@@ -4,15 +4,15 @@ import MapView from "../map/MapView.jsx";
 import { MODES } from "../map/engine.js";
 import Icon from "../components/Icon.jsx";
 import { FeatureId, Notice } from "../components/ui.jsx";
-import { CAMERA, EXISTING_FEATURES, ORIGIN } from "../data/alder.js";
+import { CAMERA, EXISTING_FEATURES, ORIGIN, SURVEY, PROJECT_BASE, COPY } from "../data/featured.js";
 import { formatCoord } from "../lib/geo.js";
 import { useMapMode } from "../lib/useMapMode.js";
 import { updateDraft, useStore } from "../lib/store.js";
-import { FlowSteps, describePlace, distanceFromCorner, fmtMeters, nearestFeature } from "./participate-shared.jsx";
+import { FlowSteps, describePlace, fmtMeters, nearestFeature } from "./participate-shared.jsx";
+import { inProjectArea } from "../data/featured.js";
 import "./participate.css";
 
 const PICK_MODES = MODES.filter((m) => m.id === "map" || m.id === "3d");
-const AREA_LIMIT = 120; // metres from the corner
 
 function parseAt(v) {
   if (!v) return null;
@@ -23,7 +23,7 @@ function parseAt(v) {
 
 const METHODS = [
   { id: "map", title: "A spot on the map", icon: "locate", sub: "Click the map, then drag the pin or use the arrow keys." },
-  { id: "feature", title: "A feature from the list", icon: "list", sub: "Crossings, stop signs, the bike route, the bus stop." },
+  { id: "feature", title: "A feature from the list", icon: "list", sub: "Crossings, signals, bus stops and lanes." },
   { id: "describe", title: "Describe the location instead", icon: "text", sub: "If the map is hard to use, tell us in words." },
 ];
 
@@ -48,8 +48,7 @@ export default function FeedbackPlace() {
 
   const lngLat = method === "describe" ? null : draft?.lngLat || null;
   const near = lngLat ? nearestFeature(lngLat) : null;
-  const dist = lngLat ? distanceFromCorner(lngLat) : 0;
-  const outside = dist > AREA_LIMIT;
+  const outside = !!lngLat && !inProjectArea(lngLat);
   const chosenFeature = draft?.featureId ? EXISTING_FEATURES.find((f) => f.id === draft.featureId) : null;
   const label = chosenFeature && method === "feature" ? chosenFeature.name : describePlace(lngLat);
 
@@ -80,13 +79,13 @@ export default function FeedbackPlace() {
   const next = () => {
     if (method === "describe") {
       const text = (draft?.describe || "").trim();
-      if (text.length < 5) { setError("Describe where your comment is about, for example “the bench outside the café on 8th”."); describeRef.current?.focus(); return; }
+      if (text.length < 5) { setError("Describe where your comment is about, for example “the crossing at 36th, south side”."); describeRef.current?.focus(); return; }
       updateDraft({ lngLat: ORIGIN, placeLabel: "Described in words", featureId: null, locMode: "describe" });
-      navigate("/projects/alder-8th/feedback/compose?describe=1");
+      navigate(`${PROJECT_BASE}/feedback/compose?describe=1`);
       return;
     }
     if (!lngLat) { setError("Choose a spot first: click the map, pick a feature, or describe the location."); return; }
-    navigate("/projects/alder-8th/feedback/compose");
+    navigate(`${PROJECT_BASE}/feedback/compose`);
   };
 
   return (
@@ -98,6 +97,8 @@ export default function FeedbackPlace() {
             <h1 id="place-title" className="t-h2">Where is your comment about?</h1>
             <p className="t-compact t-muted">Point to the exact spot. We keep only the pin, never your address, and you don't need an account.</p>
           </div>
+
+          <Notice icon="history"><strong>A replay of {COPY.round}.</strong> Comment as if it were {SURVEY.window}, {COPY.replayContext}</Notice>
 
           <fieldset className="pt-methods">
             <legend className="sr-only">How do you want to choose the location?</legend>
@@ -116,7 +117,7 @@ export default function FeedbackPlace() {
           </fieldset>
 
           {method === "feature" && (
-            <ul className="rows" aria-label="Features at this corner">
+            <ul className="rows" aria-label={COPY.featuresLabel}>
               {EXISTING_FEATURES.map((f) => (
                 <li key={f.id}>
                   <button type="button" className="rowbtn" aria-pressed={draft?.featureId === f.id} onClick={() => pickFeature(f)}>
@@ -136,7 +137,7 @@ export default function FeedbackPlace() {
                 id="describe" ref={describeRef} className="textarea" rows={4} maxLength={300}
                 value={draft?.describe || ""} onChange={(e) => { setError(null); updateDraft({ describe: e.target.value, locMode: "describe" }); }}
                 aria-invalid={!!error} aria-describedby={`describe-hint${error ? " place-error" : ""}`}
-                placeholder="e.g. the curb ramp on the southwest corner, facing Alder"
+                placeholder={COPY.describePlaceholder}
               />
               <p id="describe-hint" className="field__hint">The team will place it on the map for you. Your words are only used to find the spot.</p>
             </div>
@@ -160,12 +161,12 @@ export default function FeedbackPlace() {
           )}
 
           {outside && method !== "describe" && (
-            <Notice tone="warning" icon="alert">This spot is about {Math.round(dist)} m from the corner, outside the project area. The team can read it, but may not be able to change anything there.</Notice>
+            <Notice tone="warning" icon="alert">This spot is outside the project area. The team can read it, but may not be able to change anything there.</Notice>
           )}
           {error && <p id="place-error" className="field__error" role="alert"><Icon name="alert" />{error}</p>}
         </div>
         <div className="map-page__foot">
-          <button type="button" className="btn btn--ghost" onClick={() => navigate("/projects/alder-8th/perspectives")}>Cancel</button>
+          <button type="button" className="btn btn--ghost" onClick={() => navigate(`${PROJECT_BASE}/perspectives`)}>Cancel</button>
           <span className="spacer" />
           <button type="button" className="btn btn--accent" onClick={next}>Continue<Icon name="arrowRight" /></button>
         </div>
@@ -181,7 +182,7 @@ export default function FeedbackPlace() {
           markers={markers}
           onMarkerClick={(m) => { const f = EXISTING_FEATURES.find((x) => x.id === m.id); if (f) pickFeature(f); }}
           picking={method === "describe" ? null : { lngLat, onChange: setPin }}
-          ariaLabel="Map of SE Alder St and SE 8th Ave. Click to place your comment pin."
+          ariaLabel={`${COPY.pickMapLabel} Click to place your comment pin.`}
         >
           {method !== "describe" && (
             <div className="pt-maphint glass" aria-hidden="true">

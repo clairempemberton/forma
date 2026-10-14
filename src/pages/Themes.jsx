@@ -3,19 +3,16 @@ import { Link, useSearchParams } from "react-router-dom";
 import MapView from "../map/MapView.jsx";
 import Icon from "../components/Icon.jsx";
 import { Notice, StatusBadge, Truth, fmtDate } from "../components/ui.jsx";
-import { CAMERA, SAMPLE_COMMENTS, THEMES, THEME_BY_ID, TIMELINE } from "../data/alder.js";
+import { CAMERA, COPY, DECISION, PROJECT, SAMPLE_COMMENTS, SOURCES, SURVEY, THEMES, THEME_BY_ID, cap, optName } from "../data/featured.js";
 import { useMapMode } from "../lib/useMapMode.js";
 import { prefersReducedMotion } from "../lib/motion.js";
 import { THEME_STATUS, TOTAL_COMMENTS, fitCamera } from "./outcomes-shared.js";
 import "./outcomes.css";
 
-const MAX = Math.max(...THEMES.map((t) => t.count));
-const opened = TIMELINE.find((t) => t.title === "Round 1 opened")?.date;
-const closed = TIMELINE.find((t) => t.title === "Round 1 closed")?.date;
-const ALL_POINTS = SAMPLE_COMMENTS.map((c) => c.lngLat);
-
-// R15 · Feedback themes — the public synthesis of round 1.
+// R15 · Feedback themes — what the agency reported hearing, its answers, and sample comments placed on the map.
 export default function Themes() {
+  const MAX = useMemo(() => Math.max(...THEMES.map((t) => t.count)), []);
+  const ALL_POINTS = useMemo(() => SAMPLE_COMMENTS.map((c) => c.lngLat), []);
   const [mode, setMode] = useMapMode();
   const [params, setParams] = useSearchParams();
   const sel = params.get("t");
@@ -71,12 +68,12 @@ export default function Themes() {
       <div className="wrap page page--tight">
         <header className="thm__head">
           <div className="stack" style={{ "--stack": "12px" }}>
-            <p className="t-eyebrow">What we heard · Round 1 · {fmtDate(opened, { month: "short", day: "numeric" })} – {fmtDate(closed)}</p>
-            <h1 className="t-h1 thm__title">{TOTAL_COMMENTS} comments, grouped into six themes</h1>
-            <p className="t-body t-muted measure">Every theme has a public response from the project team. Select a theme to see where its comments were placed and what changed because of them.</p>
+            <p className="t-eyebrow">What we heard · {cap(COPY.round)} · {SURVEY.window}</p>
+            <h1 className="t-h1 thm__title">{THEMES.length} themes, each with {PROJECT.agency}'s answer</h1>
+            <p className="t-body t-muted measure">{COPY.themesSource} The comments on the map are samples written for this demo. Select a theme to see where they were placed and what {PROJECT.agency} did about it.</p>
           </div>
           <Notice tone="warning" icon="alert">
-            <strong>This is who chose to take part. It isn't a poll.</strong> Counts show how often something came up, not how many people agree. The project, comments and counts are fictional.
+            <strong>These counts aren't a poll.</strong> They count {TOTAL_COMMENTS} sample comments, not real ones. For what the {SURVEY.total.toLocaleString("en-US")} real {COPY.round} respondents preferred, see <Link className="link" to="../decision">the decision summary</Link>.
           </Notice>
         </header>
 
@@ -84,7 +81,7 @@ export default function Themes() {
           <section className="card thm__list" aria-labelledby="thm-list-title">
             <div className="thm__list-head">
               <h2 id="thm-list-title" className="t-h3">Themes</h2>
-              <Truth kind="sample">Fictional counts · n = {TOTAL_COMMENTS}</Truth>
+              <Truth kind="sample">Sample counts · n = {TOTAL_COMMENTS}</Truth>
             </div>
             <ul className="thm__rows" aria-label="Themes, by number of comments">
               {[...THEMES].sort((a, b) => b.count - a.count).map((t) => {
@@ -93,7 +90,7 @@ export default function Themes() {
                 return (
                   <li key={t.id}>
                     <button type="button" className="thm__row" aria-pressed={on} data-dim={!!sel && !on}
-                      aria-label={`${t.name}: ${t.count} comments, ${st.label.toLowerCase()}`} onClick={() => pick(t.id)}>
+                      aria-label={`${t.name}: ${t.count} sample comments, ${st.label.toLowerCase()}`} onClick={() => pick(t.id)}>
                       <span className="thm__row-name">
                         <span className="thm__row-title">{t.name}</span>
                         <span className={`thm__status thm__status--${t.status}`}>{st.label}</span>
@@ -106,7 +103,7 @@ export default function Themes() {
               })}
             </ul>
             <div className="thm__list-foot">
-              <p className="t-caption t-muted">Bars show comments, not people. Each comment is counted under one theme.</p>
+              <p className="t-caption t-muted">Bars show sample comments, not people. Each comment is counted under one theme.</p>
               {sel && <button type="button" className="btn btn--ghost btn--sm" onClick={() => pick(sel)}><Icon name="close" />Show all themes</button>}
             </div>
           </section>
@@ -144,7 +141,7 @@ export default function Themes() {
         <section className="thm__detail" aria-live="polite" aria-labelledby="thm-detail-title">
           <div className="thm__detail-head">
             <div className="stack" style={{ "--stack": "8px" }}>
-              <p className="t-eyebrow">{theme ? `Theme · ${theme.count} comments` : "In their words"}</p>
+              <p className="t-eyebrow">{theme ? `Theme · ${theme.count} sample comments` : "In sample words"}</p>
               <h2 id="thm-detail-title" className="t-h2">{theme ? theme.name : "Representative comments"}</h2>
             </div>
             {theme && <StatusBadge tone={THEME_STATUS[theme.status].tone}>{THEME_STATUS[theme.status].label}</StatusBadge>}
@@ -152,10 +149,10 @@ export default function Themes() {
 
           {theme && (
             <div className="thm__response">
-              <p className="t-eyebrow">The team's response</p>
+              <p className="t-eyebrow">{PROJECT.agency}'s response</p>
               <p className="t-h3 thm__response-text">{theme.response}</p>
               <div className="row" style={{ flexWrap: "wrap", gap: "8px 20px" }}>
-                <Link className="link" to="../revision">See what changed in version 2<Icon name="arrowRight" /></Link>
+                <Link className="link" to="../revision">How {optName(DECISION.chosen)} was refined<Icon name="arrowRight" /></Link>
                 <Link className="link" to="../decision">Read the decision<Icon name="arrowRight" /></Link>
               </div>
             </div>
@@ -167,7 +164,7 @@ export default function Themes() {
                 <figure className="card card--pad thm__quote" data-on={c.id === cid}>
                   <span className="badge badge--voice badge--plain">{THEME_BY_ID[c.theme].name}</span>
                   <blockquote className="thm__quote-text">“{c.text}”</blockquote>
-                  <figcaption className="t-caption t-muted">{c.author} · {fmtDate(c.date)} · sample comment, fictional</figcaption>
+                  <figcaption className="t-caption t-muted">{c.author} · {fmtDate(c.date)} · sample comment, not a real resident</figcaption>
                   <button type="button" className="link thm__quote-loc" onClick={() => { select(c.theme, c.id); document.getElementById("thm-map")?.scrollIntoView({ behavior: prefersReducedMotion() ? "auto" : "smooth", block: "center" }); }}>
                     <Icon name="pin" />Show on map
                   </button>
@@ -181,14 +178,14 @@ export default function Themes() {
           <div className="section-head">
             <div className="stack" style={{ "--stack": "8px" }}>
               <p className="t-eyebrow">Every theme, answered</p>
-              <h2 id="thm-answers-title" className="t-h2">The team's response to each theme</h2>
+              <h2 id="thm-answers-title" className="t-h2">{PROJECT.agency}'s response to each theme</h2>
             </div>
-            <Truth kind="illustrative" />
+            <Truth kind="source">Source: <a className="link" href={SOURCES.decision.url} target="_blank" rel="noreferrer">{PROJECT.agency} {COPY.decisionDoc}<span className="sr-only"> (opens in a new tab)</span></a></Truth>
           </div>
           <div className="table-wrap">
             <table className="table thm__table">
-              <caption className="sr-only">Each theme, its number of comments, status and the team's response</caption>
-              <thead><tr><th scope="col">Theme</th><th scope="col" className="t-num">Comments</th><th scope="col">Status</th><th scope="col">Response</th></tr></thead>
+              <caption className="sr-only">Each theme, its number of sample comments, status and {PROJECT.agency}'s response</caption>
+              <thead><tr><th scope="col">Theme</th><th scope="col" className="t-num">Sample comments</th><th scope="col">Status</th><th scope="col">Response</th></tr></thead>
               <tbody>
                 {THEMES.map((t) => (
                   <tr key={t.id} aria-selected={sel === t.id}>
@@ -206,12 +203,12 @@ export default function Themes() {
         <section className="card thm__method" aria-labelledby="thm-method-title">
           <div className="stack" style={{ "--stack": "10px" }}>
             <p className="t-eyebrow">Method</p>
-            <h2 id="thm-method-title" className="t-h3">How the themes were made</h2>
-            <Truth kind="illustrative">Fictional process for this demo</Truth>
+            <h2 id="thm-method-title" className="t-h3">How this page is put together</h2>
+            <Truth kind="sample">Sample comments · themes and responses from {PROJECT.agency}</Truth>
           </div>
           <dl className="thm__method-cols">
-            <div><dt>Read by people</dt><dd>The project team read every comment from round 1 and tagged each one with the theme it was mostly about.</dd></div>
-            <div><dt>Counted once</dt><dd>Each comment sits under one theme, so the six counts add up to {TOTAL_COMMENTS}. A count is how often something came up, not a vote.</dd></div>
+            <div><dt>From {PROJECT.agency}</dt><dd>Theme names and responses summarise what {PROJECT.agency} reported hearing, and what it decided, in the {COPY.decisionDoc}.</dd></div>
+            <div><dt>Counted once</dt><dd>Each sample comment sits under one theme, so the {THEMES.length} counts add up to {TOTAL_COMMENTS}. A count is how often something came up, not a vote.</dd></div>
             <div><dt>Place kept</dt><dd>Every comment keeps the spot it was pinned to. Select a theme to see where people were standing when they wrote.</dd></div>
           </dl>
         </section>

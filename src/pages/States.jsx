@@ -1,12 +1,9 @@
-import { lazy, Suspense } from "react";
 import Icon from "../components/Icon.jsx";
 import { Empty, Notice, Truth } from "../components/ui.jsx";
 import { HAS_MAPBOX, HAS_MAPILLARY } from "../lib/env.js";
 import { useReducedMotion } from "../lib/motion.js";
 import "../map/map.css";
 import "./outcomes.css";
-
-const SceneCompare = lazy(() => import("../components/SceneCompare.jsx"));
 
 // Each specimen is rendered with the same markup and classes the live component uses,
 // made inert so the gallery can't trigger real actions.
@@ -46,7 +43,7 @@ export default function States() {
             <h1 className="t-h1">Beyond the happy path</h1>
             <p className="t-body t-muted measure">Every screen in Forma has a loading, empty, error and setup state. Each specimen below is the real interface, shown as it appears, with when it happens and the way back.</p>
           </div>
-          <Truth kind="illustrative">Fictional demo data</Truth>
+          <Truth kind="sample">Examples use sample data</Truth>
         </header>
 
         <section className="sts__group" aria-labelledby="sts-map">
@@ -135,12 +132,6 @@ export default function States() {
               </div>
             </Specimen>
 
-            <Specimen title="Before and after renders pending" tag="In production" tall wide when="Street-level comparison is chosen but the matched renders for a scene aren't finished. This is the live component reading the scene metadata." recovery="Pick another scene, or use Map and 3D to compare; unrelated photos are never paired.">
-              <Suspense fallback={<div className="scn scn--loading"><span className="mv__spinner" /></div>}>
-                <SceneCompare scene="alder-8th-ne-corner" />
-              </Suspense>
-            </Specimen>
-
             <Specimen title="Looking for street-level photos" tag="Loading" tall when="Street view is opened and Forma is searching Mapillary for the nearest photo of the selected spot." recovery="Back to map at any time; the search is cancelled if you leave.">
               <div className="sv">
                 <div className="sv__state">
@@ -187,7 +178,7 @@ export default function States() {
             <Specimen title="Comment not sent" tag="Error" pattern when="Sending a comment to the project team fails." recovery="The draft stays on screen; try again, or copy the text.">
               <div className="sts__pad sts__form">
                 <Notice tone="danger" icon="alert"><strong>Your comment wasn't sent.</strong> It's still here, exactly as you wrote it.</Notice>
-                <div className="textarea sts__fake-input sts__quote">The ramp on this corner points into the middle of the intersection…</div>
+                <div className="textarea sts__fake-input sts__quote">The ramp at 36th points into the middle of the intersection…</div>
                 <div className="row"><span className="btn btn--primary btn--sm"><Icon name="rotate" />Try again</span><span className="btn btn--ghost btn--sm">Copy text</span></div>
               </div>
             </Specimen>

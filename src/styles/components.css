@@ -39,6 +39,8 @@
 .badge--accent { background: var(--accent-tint); color: var(--accent-ink); }
 .badge--positive { background: var(--positive-tint); color: var(--positive-ink); }
 .badge--warning { background: var(--warning-tint); color: var(--warning-ink); }
+.badge--info { background: var(--info-tint); color: var(--info-ink); }
+.badge--danger { background: var(--danger-tint); color: var(--danger-ink); }
 .badge--ink { background: var(--ink); color: #fff; }
 .badge--voice { background: var(--voice-tint); color: var(--voice-ink); }
 .badge--outline { background: transparent; box-shadow: inset 0 0 0 1px var(--line-2); color: var(--ink-2); }

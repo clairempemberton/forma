@@ -1,12 +1,11 @@
-import { lazy, Suspense, useEffect } from "react";
-import { Routes, Route, Outlet, useLocation, useParams } from "react-router-dom";
+import { lazy, Suspense, useEffect, useState } from "react";
+import { Routes, Route, Outlet, Navigate, useLocation, useParams } from "react-router-dom";
 import AppHeader from "./components/AppHeader.jsx";
 import ProjectHeader from "./components/ProjectHeader.jsx";
+import { activateLoaded, isFullProject, loadProject, useActiveProjectId } from "./data/featured.js";
 
 const page = (load) => lazy(load);
-const Landing = page(() => import("./pages/Landing.jsx"));
-const HowItWorks = page(() => import("./pages/HowItWorks.jsx"));
-const Directory = page(() => import("./pages/Directory.jsx"));
+const Home = page(() => import("./pages/Home.jsx"));
 const Overview = page(() => import("./pages/Overview.jsx"));
 const ProjectPreview = page(() => import("./pages/ProjectPreview.jsx"));
 const Explore = page(() => import("./pages/Explore.jsx"));
@@ -53,14 +52,39 @@ function PublicLayout() {
   );
 }
 
+// Old directory links (/projects?q=…) keep their filters on the home map.
+function ToHome() {
+  const { search } = useLocation();
+  return <Navigate to={`/${search}`} replace />;
+}
+
+// Screens outside a project's routes (/me, /staff) remount when the active project changes.
+function ActiveProjectOutlet() {
+  const id = useActiveProjectId();
+  return <Suspense fallback={<PageFallback />}><Outlet key={id} /></Suspense>;
+}
+
 function ProjectLayout() {
   const { id } = useParams();
-  if (id !== "alder-8th") return <Suspense fallback={<PageFallback />}><ProjectPreview /></Suspense>;
+  const { pathname, search } = useLocation();
+  // Fully built projects load their data module first; every other project is a preview card.
+  const [ready, setReady] = useState(() => activateLoaded(id));
+  useEffect(() => {
+    if (!isFullProject(id) || activateLoaded(id)) { setReady(true); return; }
+    let live = true;
+    setReady(false);
+    loadProject(id).then(() => live && setReady(true));
+    return () => { live = false; };
+  }, [id]);
+  // The featured project used to live at /projects/alder-8th; keep old links working.
+  if (id === "alder-8th") return <Navigate to={pathname.replace("/projects/alder-8th", "/projects/hawthorne") + search} replace />;
+  if (!isFullProject(id)) return <Suspense fallback={<PageFallback />}><ProjectPreview /></Suspense>;
+  if (!ready || !activateLoaded(id)) return <PageFallback />;
   return (
-    <>
+    <div className="project-layout" key={id}>
       <ProjectHeader />
-      <Suspense fallback={<PageFallback />}><Outlet /></Suspense>
-    </>
+      <div className="project-layout__main"><Suspense fallback={<PageFallback />}><Outlet /></Suspense></div>
+    </div>
   );
 }
 
@@ -70,10 +94,10 @@ export default function App() {
       <ScrollAndTitle />
       <Routes>
         <Route element={<PublicLayout />}>
-          <Route index element={<Landing />} />
-          <Route path="how-it-works" element={<HowItWorks />} />
-          <Route path="projects" element={<Directory />} />
-          <Route path="me" element={<MyContributions />} />
+          <Route index element={<Home />} />
+          <Route path="how-it-works" element={<Navigate to="/" replace />} />
+          <Route path="projects" element={<ToHome />} />
+          <Route element={<ActiveProjectOutlet />}><Route path="me" element={<MyContributions />} /></Route>
           <Route path="states" element={<States />} />
           <Route path="projects/:id" element={<ProjectLayout />}>
             <Route index element={<Overview />} />
@@ -95,7 +119,7 @@ export default function App() {
           </Route>
           <Route path="*" element={<NotFound />} />
         </Route>
-        <Route path="staff" element={<Suspense fallback={<PageFallback />}><Outlet /></Suspense>}>
+        <Route path="staff" element={<ActiveProjectOutlet />}>
           <Route index element={<StaffDashboard />} />
           <Route path="triage" element={<StaffTriage />} />
           <Route path="themes" element={<StaffThemes />} />

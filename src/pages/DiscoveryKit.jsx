@@ -1,5 +1,4 @@
-// Pieces shared by the public discovery screens: landing, how it works, directory,
-// project preview and not found.
+// Pieces shared by the public discovery screens: home, project preview and not found.
 import { useState } from "react";
 import { Link } from "react-router-dom";
 import { Logo, StatusBadge } from "../components/ui.jsx";
@@ -14,20 +13,19 @@ export function SiteFooter() {
         <div className="dsc-footer__brand stack" style={{ "--stack": "14px" }}>
           <Logo />
           <p className="t-compact t-muted">
-            Forma is a prototype for planning streets in the open. The corner is real; the project, its options, comments and outcomes are fictional.
+            Forma is an unofficial concept for planning streets in the open. Project facts are cited to official pages; resident comments are samples. Not affiliated with the City of Portland.
           </p>
         </div>
         <nav className="dsc-footer__col" aria-label="Forma">
           <p className="t-eyebrow">Forma</p>
-          <Link to="/projects">Explore projects</Link>
-          <Link to="/how-it-works">How it works</Link>
+          <Link to="/">Projects map</Link>
           <Link to="/me">My comments</Link>
         </nav>
         <nav className="dsc-footer__col" aria-label="Demo project">
-          <p className="t-eyebrow">Demo project</p>
-          <Link to="/projects/alder-8th">Alder &amp; 8th</Link>
-          <Link to="/projects/alder-8th/text">Text-only version</Link>
-          <Link to="/staff">Staff workspace (demo)</Link>
+          <p className="t-eyebrow">Featured</p>
+          <Link to="/projects/hawthorne">SE Hawthorne Pave &amp; Paint</Link>
+          <Link to="/projects/hawthorne/text">Text-only version</Link>
+          <Link to="/staff">Staff workspace</Link>
         </nav>
         <div className="dsc-footer__col">
           <p className="t-eyebrow">Data</p>
@@ -39,7 +37,7 @@ export function SiteFooter() {
 }
 
 // ——— Plan thumbnails: small SVG site plans, one per project, drawn in the map palette. ———
-const VARIANT = { "alder-8th": "crossing", "belmont-12th": "transit", "laurelhurst-north": "park", "broadway-7th": "signal", "division-50th": "corner" };
+const VARIANT = { hawthorne: "crossing", "ne-broadway": "signal", "se-chavez-safety": "corner", "se-59th-woodward": "corner", "ne-20th-irving": "crossing", "32nd-burnside": "signal", "creston-skatepark": "park", "westmoreland-courts": "park", "82nd-ave-fx": "transit" };
 
 export function PlanThumb({ id, className = "" }) {
   const v = VARIANT[id] || "crossing";
@@ -58,10 +56,10 @@ export function PlanThumb({ id, className = "" }) {
 const ROAD = "#e2e6eb";
 const BLOCK = "#ffffff";
 const EDGE = "#d6dbe2";
-const ACC = "#2b50f0";
-const ACC_FILL = "rgba(43,80,240,0.14)";
-const TREE = "#cfe6db";
-const TREE_EDGE = "#7bb89f";
+const ACC = "#2563eb";
+const ACC_FILL = "rgba(37, 99, 235,0.16)";
+const TREE = "#86efac";
+const TREE_EDGE = "#16a34a";
 
 const Block = (p) => <rect rx="3" fill={BLOCK} stroke={EDGE} strokeWidth="1" {...p} />;
 const Tree = ({ x, y, r = 7, ring }) => (
@@ -109,7 +107,7 @@ function Crossing() {
       <Tree x={94} y={36} ring />
       <Tree x={226} y={134} />
       <Tree x={60} y={134} />
-      <circle cx="122" cy="110" r="3.2" fill="#d99035" stroke="#fff" />
+      <circle cx="122" cy="110" r="3.2" fill="#6b7280" stroke="#fff" />
     </>
   );
 }
@@ -130,7 +128,7 @@ function Transit() {
       <Tree x={40} y={28} />
       <Tree x={110} y={30} />
       <Tree x={300} y={30} />
-      <circle cx="196" cy="62" r="3" fill="#d99035" stroke="#fff" />
+      <circle cx="196" cy="62" r="3" fill="#6b7280" stroke="#fff" />
     </>
   );
 }
@@ -140,7 +138,7 @@ function Park() {
     <>
       <rect x="0" y="0" width="320" height="30" fill={ROAD} />
       <rect x="250" y="0" width="70" height="168" fill={ROAD} />
-      <rect x="0" y="40" width="240" height="132" rx="4" fill="#e7f2ec" stroke="#cfe0d6" />
+      <rect x="0" y="40" width="240" height="132" rx="4" fill="#dcfce7" stroke="#86efac" />
       <Block x="262" y="40" width="70" height="60" />
       <Block x="262" y="110" width="70" height="62" />
       <Tree x={30} y={70} r={12} />
@@ -268,7 +266,7 @@ export function ProjectCard({ p, distance, selected, onSelect, headingLevel = 3 
         <p className="t-compact t-muted">{p.summary}</p>
         <div className="dsc-card__foot">
           <span><Icon name="calendar" />{p.dates}</span>
-          {distance ? <span className="dsc-card__dist"><Icon name="locate" />{distance}</span> : <span><Icon name="a11y" />{p.access}</span>}
+          {distance ? <span className="dsc-card__dist"><Icon name="locate" />{distance}</span> : <span>{p.agency}</span>}
         </div>
       </div>
     </article>

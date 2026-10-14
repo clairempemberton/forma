@@ -2,9 +2,9 @@ import { useEffect, useRef, useState } from "react";
 import { Link, useNavigate, useSearchParams } from "react-router-dom";
 import Icon from "../components/Icon.jsx";
 import { Notice } from "../components/ui.jsx";
-import { ORIGIN, THEMES } from "../data/alder.js";
+import { OPTIONS, ORIGIN, THEMES, PROJECT_BASE, COPY } from "../data/featured.js";
 import { updateDraft, clearDraft, useStore } from "../lib/store.js";
-import { FlowSteps, MiniMap, OPTION_CHOICES, SENTIMENTS, THEME_ICON, THEME_SHORT, describePlace, nearestFeature, fmtMeters } from "./participate-shared.jsx";
+import { FlowSteps, MiniMap, optionChoices, SENTIMENTS, themeIcon, themeShort, describePlace, nearestFeature, fmtMeters } from "./participate-shared.jsx";
 import "./participate.css";
 
 const MAX = 1000;
@@ -27,12 +27,12 @@ export default function FeedbackCompose() {
   // Every change autosaves to this browser.
   const save = (patch) => updateDraft({ ...patch, savedAt: Date.now() });
 
-  // Links from other screens: ?describe=1 (no map) and ?option=A|B|C preselect.
+  // Links from other screens: ?describe=1 (no map) and ?option=<alternative id>|today preselect.
   useEffect(() => {
     const patch = {};
     if (params.get("describe") === "1") Object.assign(patch, { locMode: "describe", lngLat: ORIGIN, placeLabel: "Described in words", featureId: null });
     const o = params.get("option");
-    if (["A", "B", "C", "today"].includes(o)) patch.option = o;
+    if (o === "today" || OPTIONS.some((x) => x.id === o)) patch.option = o;
     if (o === "general") patch.option = null;
     if (Object.keys(patch).length) updateDraft(patch);
     // Only on arrival.
@@ -41,7 +41,7 @@ export default function FeedbackCompose() {
 
   const text = draft.text || "";
   const errors = {};
-  if (describing && (draft.describe || "").trim().length < 5) errors.describe = "Describe where your comment is about, for example “the curb ramp on the southwest corner”.";
+  if (describing && (draft.describe || "").trim().length < 5) errors.describe = "Describe where your comment is about, for example “the crossing at 36th, south side”.";
   if (!draft.theme) errors.theme = "Choose what your comment is about, or “Something else”.";
   if (text.trim().length < MIN) errors.text = text.trim().length === 0 ? "Write your comment." : `Add a little more — at least ${MIN} characters.`;
   if (!draft.sentiment) errors.sentiment = "Choose whether this is a concern, support or an idea.";
@@ -53,7 +53,7 @@ export default function FeedbackCompose() {
     if (!hasPlace) return;
     const first = ["describe", "theme", "text", "sentiment"].find((k) => errors[k]);
     if (first) { (refs[first].current?.querySelector?.("input") || refs[first].current)?.focus(); return; }
-    navigate(`/projects/alder-8th/feedback/review${describing ? "?describe=1" : ""}`);
+    navigate(`${PROJECT_BASE}/feedback/review${describing ? "?describe=1" : ""}`);
   };
 
   const near = draft.lngLat && !describing ? nearestFeature(draft.lngLat) : null;
@@ -87,9 +87,9 @@ export default function FeedbackCompose() {
                   id="describe-text" ref={refs.describe} className="textarea pt-describe" rows={3} maxLength={300}
                   value={draft.describe || ""} onChange={(e) => save({ describe: e.target.value, locMode: "describe", lngLat: draft.lngLat || ORIGIN })}
                   aria-invalid={!!shown.describe} aria-describedby={`describe-hint${shown.describe ? " err-describe" : ""}`}
-                  placeholder="e.g. the curb ramp on the southwest corner, facing Alder"
+                  placeholder={COPY.describePlaceholder}
                 />
-                <p id="describe-hint" className="field__hint">No map needed. The team places the pin for you; your words are only used to find the spot. <Link className="link" to="/projects/alder-8th/feedback">Use the map instead</Link></p>
+                <p id="describe-hint" className="field__hint">No map needed. The team places the pin for you; your words are only used to find the spot. <Link className="link" to={`${PROJECT_BASE}/feedback`}>Use the map instead</Link></p>
                 {shown.describe && <p id="err-describe" className="field__error"><Icon name="alert" />{shown.describe}</p>}
               </div>
             )}
@@ -100,7 +100,7 @@ export default function FeedbackCompose() {
                 {THEMES.map((t) => (
                   <label key={t.id} className="chip pt-radio">
                     <input type="radio" name="theme" className="sr-only" checked={draft.theme === t.id} onChange={() => save({ theme: t.id })} />
-                    <Icon name={draft.theme === t.id ? "check" : THEME_ICON[t.id]} />{THEME_SHORT[t.id]}
+                    <Icon name={draft.theme === t.id ? "check" : themeIcon(t.id)} />{themeShort(t.id)}
                   </label>
                 ))}
                 <label className="chip pt-radio">
@@ -112,16 +112,16 @@ export default function FeedbackCompose() {
             </fieldset>
 
             <fieldset className="pt-fieldset" ref={refs.option} id="f-option">
-              <legend className="field__label">Which design is it about?</legend>
+              <legend className="field__label">Which alternative is it about?</legend>
               <div className="seg pt-seg pt-seg--radio">
-                {OPTION_CHOICES.map((o) => (
+                {optionChoices().map((o) => (
                   <label key={o.id} className="seg__btn pt-segradio">
                     <input type="radio" name="option" className="sr-only" checked={(draft.option || "general") === o.id} onChange={() => save({ option: o.id === "general" ? null : o.id })} />
                     {o.label}
                   </label>
                 ))}
               </div>
-              <p className="field__hint">“General” if it's about the corner as a whole. <Link className="link" to="/projects/alder-8th/compare">Compare the options</Link></p>
+              <p className="field__hint">“General” if it's about {COPY.wholeThing} as a whole. <Link className="link" to={`${PROJECT_BASE}/compare`}>Compare the {COPY.alts}</Link></p>
             </fieldset>
 
             <div className="field" id="f-text">
@@ -135,7 +135,7 @@ export default function FeedbackCompose() {
                 id="comment-text" ref={refs.text} className="textarea" rows={6} maxLength={MAX}
                 value={text} onChange={(e) => save({ text: e.target.value })}
                 aria-invalid={!!shown.text} aria-describedby={`text-hint text-count${shown.text ? " err-text" : ""}`}
-                placeholder="e.g. When I cross 8th here with a stroller, drivers don't see me until I'm in the road."
+                placeholder={COPY.commentPlaceholder}
               />
               <p id="text-hint" className="field__hint">Please leave out names, addresses and phone numbers. If any slip in, we remove them before anything is public.</p>
               {shown.text && <p id="err-text" className="field__error"><Icon name="alert" />{shown.text}</p>}
@@ -169,7 +169,7 @@ export default function FeedbackCompose() {
                 {draft.savedAt ? `Draft saved in this browser · ${timeOf(draft.savedAt)}` : "Your draft stays in this browser"}
               </p>
               <span className="spacer" />
-              <Link className="btn btn--secondary" to="/projects/alder-8th/feedback"><Icon name="arrowLeft" />Back</Link>
+              <Link className="btn btn--secondary" to={`${PROJECT_BASE}/feedback`}><Icon name="arrowLeft" />Back</Link>
               <button type="submit" className="btn btn--accent">Continue<Icon name="arrowRight" /></button>
             </div>
           </form>
@@ -189,7 +189,7 @@ export default function FeedbackCompose() {
                     </div>
                     {describing
                       ? <button type="button" className="btn btn--ghost btn--sm" onClick={() => refs.describe.current?.focus()}><Icon name="edit" />Edit</button>
-                      : <Link className="btn btn--ghost btn--sm" to="/projects/alder-8th/feedback"><Icon name="pin" />Move pin</Link>}
+                      : <Link className="btn btn--ghost btn--sm" to={`${PROJECT_BASE}/feedback`}><Icon name="pin" />Move pin</Link>}
                   </div>
                 </div>
               </div>
@@ -198,21 +198,21 @@ export default function FeedbackCompose() {
                 <div className="empty__icon"><Icon name="pin" /></div>
                 <p className="pt-picked__title">Choose a location first</p>
                 <p className="t-caption t-muted">Comments are tied to a spot so the team knows exactly what you mean. You can also describe it in words.</p>
-                <Link className="btn btn--accent btn--sm" to="/projects/alder-8th/feedback">Choose a location</Link>
+                <Link className="btn btn--accent btn--sm" to={`${PROJECT_BASE}/feedback`}>Choose a location</Link>
               </div>
             )}
 
             <div className="pt-privnote">
               <p className="pt-privnote__title"><Icon name="lock" />Private until you choose</p>
               <ul>
-                <li>Your draft stays in this browser. Nothing is sent until step 3.</li>
+                <li>Your draft stays in this browser. This demo has no server, so nothing is ever sent.</li>
                 <li>No account, email or address needed.</li>
                 <li>You'll see exactly what becomes public before you send.</li>
               </ul>
               {discarding ? (
                 <div className="row" role="group" aria-label="Confirm discarding the draft">
                   <span className="t-caption">Delete this draft?</span>
-                  <button type="button" className="link pt-discard pt-discard--yes" onClick={() => { clearDraft(); navigate("/projects/alder-8th/perspectives"); }}>Delete</button>
+                  <button type="button" className="link pt-discard pt-discard--yes" onClick={() => { clearDraft(); navigate(`${PROJECT_BASE}/perspectives`); }}>Delete</button>
                   <button type="button" className="link pt-discard" onClick={() => setDiscarding(false)}>Keep it</button>
                 </div>
               ) : (

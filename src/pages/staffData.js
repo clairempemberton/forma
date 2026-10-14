@@ -2,7 +2,7 @@
 // data (SAMPLE_COMMENTS), the comments submitted in this browser (store "mine") and the
 // staff's own triage decisions (store "triage"). Nothing is hardcoded per comment.
 import { useMemo, createElement as h } from "react";
-import { SAMPLE_COMMENTS, THEMES, THEME_BY_ID, OPTIONS, EXISTING_FEATURES, VERSIONS, REVISION_CHANGES, PROJECT, TIMELINE, F } from "../data/alder.js";
+import { SAMPLE_COMMENTS, THEMES, THEME_BY_ID, OPTIONS, EXISTING_FEATURES, VERSIONS, REVISION_CHANGES, PROJECT, TIMELINE, F, COPY, optTag } from "../data/featured.js";
 import { distanceMeters, centroid } from "../lib/geo.js";
 import { useStore, setState } from "../lib/store.js";
 
@@ -15,7 +15,8 @@ export const STATUSES = [
 ];
 export const STATUS_BY_ID = Object.fromEntries(STATUSES.map((s) => [s.id, s]));
 
-export const STAGES = ["Exploring", "Feedback open", "Reviewing", "Revised", "Decision published"];
+// The real project's stages (COPY.stages). The staff workspace replays one feedback round, so it always sits at COPY.replayStage.
+export const stages = () => COPY.stages;
 
 export const DECISIONS = [
   { id: "addressed", label: "Addressed", tone: "positive" },
@@ -27,7 +28,7 @@ export const DECISION_BY_ID = Object.fromEntries(DECISIONS.map((d) => [d.id, d])
 // Sample ids are short (c01); give every comment a stable reference staff can quote.
 export const refOf = (c) => c.ref || `CM-${c.id.replace(/\D/g, "").padStart(3, "0")}`;
 export const themeName = (id) => THEME_BY_ID[id]?.name || "No theme";
-export const optionLabel = (id) => (id ? `Option ${id}` : "—");
+export const optionLabel = (id) => (id ? optTag(id) : "—");
 
 // ——— Moderation rules ———
 const PHONE = /(\+?1[\s.-]?)?\(?\b\d{3}\)?[\s.-]?\d{3}[\s.-]?\d{4}\b/;
@@ -106,11 +107,11 @@ export function themeStats(comments) {
 }
 
 // ——— Spatial helpers ———
-// Points staff can measure from: existing features (OSM) and the labelled parts of version 2.
-export const SPATIAL_FEATURES = [
+// Points staff can measure from: existing features (OSM) and the labelled parts of the refined, chosen option.
+export const spatialFeatures = () => [
   ...EXISTING_FEATURES.map((f) => ({ id: f.id, label: `${f.id} · ${f.name}`, lngLat: f.lngLat })),
   ...dedupe(VERSIONS[1].geojson.features.filter((f) => f.properties.id && f.properties.label)
-    .map((f) => ({ id: f.properties.id, label: `${f.properties.id} · ${f.properties.label} (v2)`, lngLat: centroid(f) }))),
+    .map((f) => ({ id: f.properties.id, label: `${f.properties.id} · ${f.properties.label} (${VERSIONS[1].label.toLowerCase()})`, lngLat: centroid(f) }))),
 ];
 function dedupe(list) { const seen = new Set(); return list.filter((x) => (seen.has(x.id) ? false : seen.add(x.id))); }
 
@@ -146,8 +147,9 @@ export function daysUntil(iso) {
   const t = new Date(); t.setHours(0, 0, 0, 0);
   return Math.round((d - t) / 86400000);
 }
-export const currentStage = () => Math.max(0, STAGES.indexOf(PROJECT.status));
-export const currentStep = () => TIMELINE.find((s) => s.status === "current");
+export const currentStage = () => Math.max(0, COPY.stages.indexOf(COPY.replayStage));
+// The timeline entry the replay is set in: the feedback round opening.
+export const currentStep = () => TIMELINE.find((s) => s.title === COPY.replayStep);
 export const nextStep = () => TIMELINE.find((s) => s.status === "upcoming");
 
 // Weekly buckets (weeks start Monday) between the first and last comment date.

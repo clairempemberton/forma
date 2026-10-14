@@ -3,12 +3,12 @@ import StaffShell from "../components/StaffShell.jsx";
 import MapView from "../map/MapView.jsx";
 import Icon from "../components/Icon.jsx";
 import { Truth, Empty, fmtDate } from "../components/ui.jsx";
-import { CAMERA, F } from "../data/alder.js";
+import { CAMERA, F, optTag } from "../data/featured.js";
 import { circle } from "../lib/geo.js";
 import { setTriage } from "../lib/store.js";
 import { useParam } from "../lib/useMapMode.js";
 import {
-  useStaffData, STATUSES, THEMES, THEME_BY_ID, OPTIONS, SPATIAL_FEATURES, themeName, optionLabel, metres, cameraFor, StatusPill,
+  useStaffData, STATUSES, THEMES, THEME_BY_ID, OPTIONS, spatialFeatures, themeName, optionLabel, metres, cameraFor, StatusPill,
 } from "./staffData.js";
 import "./staff.css";
 
@@ -34,7 +34,7 @@ export default function StaffTriage() {
   const [camera, setCamera] = useState(null);
   const tableRef = useRef(null);
 
-  const near = SPATIAL_FEATURES.find((f) => f.id === nearId);
+  const near = spatialFeatures().find((f) => f.id === nearId);
   const rows = useMemo(() => {
     const needle = q.trim().toLowerCase();
     const list = comments.filter((c) =>
@@ -119,7 +119,7 @@ export default function StaffTriage() {
   const clear = () => { setQ(""); setTheme("all"); setOption("all"); setStatus("all"); setNearId(""); };
 
   return (
-    <StaffShell title="Feedback" actions={<Truth kind="sample">Sample comments · fictional, plus any sent from this browser</Truth>}>
+    <StaffShell title="Feedback" actions={<Truth kind="sample">Sample comments · not real residents, plus any sent from this browser</Truth>}>
       <div className="st">
         <div className="st-status" role="group" aria-label="Filter by status">
           <button type="button" className="chip" aria-pressed={status === "all"} onClick={() => setStatus("all")}>All <span className="count">{comments.length}</span></button>
@@ -143,11 +143,11 @@ export default function StaffTriage() {
               <option value="none">No theme yet</option>
             </select>
           </label>
-          <label className="st-filter"><span className="sf-label">Option</span>
+          <label className="st-filter"><span className="sf-label">Alternative</span>
             <select className="select sf-select" value={option} onChange={(e) => setOption(e.target.value)}>
-              <option value="all">Any option</option>
-              {OPTIONS.map((o) => <option key={o.id} value={o.id}>Option {o.id} · {o.short}</option>)}
-              <option value="none">No option named</option>
+              <option value="all">Any alternative</option>
+              {OPTIONS.map((o) => <option key={o.id} value={o.id}>{optTag(o.id)} · {o.short}</option>)}
+              <option value="none">No alternative named</option>
             </select>
           </label>
           <div className="st-filter st-filter--near">
@@ -158,7 +158,7 @@ export default function StaffTriage() {
               </select>
               <select className="select sf-select" aria-label="of feature" value={nearId} onChange={(e) => setNearId(e.target.value)}>
                 <option value="">of any feature</option>
-                {SPATIAL_FEATURES.map((f) => <option key={f.id} value={f.id}>of {f.label}</option>)}
+                {spatialFeatures().map((f) => <option key={f.id} value={f.id}>of {f.label}</option>)}
               </select>
             </div>
           </div>
@@ -178,7 +178,7 @@ export default function StaffTriage() {
                       <th className="st-col-ref">Ref</th>
                       <th>Comment</th>
                       {sortHead("theme", "Theme", "st-col-theme")}
-                      <th className="st-col-opt">Option</th>
+                      <th className="st-col-opt">Alt</th>
                       {sortHead("date", "Date", "st-col-date")}
                       {sortHead("status", "Status", "st-col-status")}
                     </tr>
@@ -259,7 +259,7 @@ function Detail({ c, nearby, onPick, onClose }) {
       <div className="st-detail__head">
         <div>
           <h2 id="st-detail-h" className="t-mono st-ref">{c.ref}</h2>
-          <p className="t-caption t-muted">{fmtDate(c.date)} · {c.author}{c.option ? ` · Option ${c.option}` : ""}</p>
+          <p className="t-caption t-muted">{fmtDate(c.date)} · {c.author}{c.option ? ` · Alt ${c.option}` : ""}</p>
         </div>
         <button type="button" className="btn btn--ghost btn--icon btn--sm" onClick={onClose} aria-label="Close comment"><Icon name="close" /></button>
       </div>

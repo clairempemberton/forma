@@ -19,28 +19,32 @@
   --ink-3: #8a93a0;        /* decorative / disabled only */
   --ink-inverse: #ffffff;
 
-  /* Accent — electric cobalt. One accent, used for action, selection and proposals. */
-  --accent: #2b50f0;       /* 6.0:1 */
-  --accent-ink: #1f3fd1;   /* text on tint */
-  --accent-hover: #2244d8;
-  --accent-tint: #eef1ff;
-  --accent-tint-2: #dfe5ff;
-  --accent-glow: rgba(43, 80, 240, 0.32);
+  /* Accent — green. One accent, used for action, selection and proposals. */
+  --accent: #15803d;       /* 5.0:1 */
+  --accent-ink: #166534;   /* text on tint */
+  --accent-hover: #14532d;
+  --accent-tint: #f0fdf4;
+  --accent-tint-2: #dcfce7;
+  --accent-glow: rgba(21, 128, 61, 0.32);
 
-  /* Resident voice — amber, never used for UI chrome */
-  --voice: #b4600e;        /* 4.55:1 */
-  --voice-ink: #8f4c0b;
-  --voice-tint: #fff4e6;
+  /* Resident voice — grey, never used for UI chrome */
+  --voice: #4b5563;        /* 7.6:1 */
+  --voice-ink: #374151;
+  --voice-tint: #f3f4f6;
 
   /* Status */
-  --positive: #16856a;
-  --positive-ink: #12715a;
-  --positive-tint: #e8f5f0;
-  --warning: #d99035;
-  --warning-ink: #8a5310;
-  --warning-tint: #fdf3e5;
-  --danger: #c63a3a;
-  --danger-tint: #fcecec;
+  --positive: #15803d;
+  --positive-ink: #166534;
+  --positive-tint: #f0fdf4;
+  --warning: #6b7280;
+  --warning-ink: #374151;
+  --warning-tint: #f3f4f6;
+  --danger: #dc2626;
+  --danger-ink: #b91c1c;
+  --danger-tint: #fef2f2;
+  --info: #2563eb;
+  --info-ink: #1d4ed8;
+  --info-tint: #eff6ff;
 
   /* Type */
   --font: "Inter Variable", "Inter", ui-sans-serif, system-ui, -apple-system, "Segoe UI", sans-serif;

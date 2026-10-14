@@ -2,17 +2,20 @@ import { Link, NavLink, useLocation } from "react-router-dom";
 import { useEffect, useRef, useState } from "react";
 import Icon from "./Icon.jsx";
 import { StatusBadge } from "./ui.jsx";
-import { PROJECT } from "../data/alder.js";
+import { PROJECT } from "../data/featured.js";
 
 const TABS = [
-  { to: "", label: "Overview", match: (p) => p === "" },
-  { to: "explore", label: "Proposal", match: (p) => /^(explore|inspect|evidence)/.test(p) },
-  { to: "compare", label: "Compare options", match: (p) => /^(compare|alternatives)/.test(p) },
-  { to: "perspectives", label: "Community perspectives", match: (p) => /^(perspectives|themes|feedback)/.test(p) },
-  { to: "updates", label: "Updates", match: (p) => /^(updates|revision|decision)/.test(p) },
+  { to: "", label: "Overview", icon: "doc", match: (p) => p === "" },
+  { to: "explore", label: "Proposal", icon: "map", match: (p) => /^(explore|inspect|evidence)/.test(p) },
+  { to: "compare", label: "Compare options", icon: "swap", match: (p) => /^(compare|alternatives)/.test(p) },
+  { to: "perspectives", label: "Community perspectives", icon: "users", match: (p) => /^(perspectives|themes|feedback)/.test(p) },
+  { to: "updates", label: "Updates", icon: "history", match: (p) => /^(updates|revision|decision)/.test(p) },
 ];
 
-// Breadcrumb + project tabs, shared by every public project screen.
+// Sidebar on wide screens, top bar on narrow ones. Matches the breakpoint in shell.css.
+const SIDEBAR_MQ = "(min-width: 1181px)";
+
+// Project identity + section nav, shared by every public project screen.
 export default function ProjectHeader({ project = PROJECT }) {
   const { pathname } = useLocation();
   const base = `/projects/${project.id}`;
@@ -20,13 +23,16 @@ export default function ProjectHeader({ project = PROJECT }) {
   const [copied, setCopied] = useState(false);
   const ref = useRef(null);
 
-  // Map pages fill the viewport below this header, whose height changes when the tabs wrap.
+  // Map pages fill the viewport below the top bar; as a sidebar it takes no vertical space.
   useEffect(() => {
     const el = ref.current;
     if (!el) return;
-    const ro = new ResizeObserver(() => document.documentElement.style.setProperty("--project-h", `${el.offsetHeight}px`));
+    const mq = window.matchMedia(SIDEBAR_MQ);
+    const sync = () => document.documentElement.style.setProperty("--project-h", mq.matches ? "0px" : `${el.offsetHeight}px`);
+    const ro = new ResizeObserver(sync);
     ro.observe(el);
-    return () => { ro.disconnect(); document.documentElement.style.removeProperty("--project-h"); };
+    mq.addEventListener("change", sync);
+    return () => { ro.disconnect(); mq.removeEventListener("change", sync); document.documentElement.style.removeProperty("--project-h"); };
   }, []);
 
   const share = async () => {
@@ -38,25 +44,23 @@ export default function ProjectHeader({ project = PROJECT }) {
   };
 
   return (
-    <div className="project-header" ref={ref}>
-      <div className="project-header__inner">
-        <nav className="crumbs" aria-label="Breadcrumb">
-          <Link to="/projects">Projects</Link>
-          <Icon name="chevronRight" />
-          <span className="crumbs__muted">{project.place.neighborhood.split(" · ")[0]}</span>
-          <Icon name="chevronRight" />
-          <Link to={base} aria-current={rest === "" ? "page" : undefined} className="crumbs__current">{project.title}</Link>
-          <StatusBadge tone={project.statusTone}>{project.status}</StatusBadge>
-        </nav>
-        <nav className="tabs project-header__tabs" aria-label="Project sections">
-          {TABS.map((t) => (
-            <NavLink key={t.label} end to={t.to ? `${base}/${t.to}` : base} className="tab" aria-current={t.match(rest) ? "page" : undefined}>{t.label}</NavLink>
-          ))}
-        </nav>
-        <button type="button" className="btn btn--ghost btn--sm project-header__share" onClick={share}>
-          <Icon name={copied ? "check" : "share"} />{copied ? "Link copied" : "Share"}
-        </button>
+    <aside className="project-header" ref={ref} aria-label="Project">
+      <Link to="/" className="project-header__back"><Icon name="arrowLeft" />All projects</Link>
+      <div className="project-header__id">
+        <span className="project-header__place">{project.place.neighborhood.split(" · ")[0]}</span>
+        <Link to={base} className="project-header__title">{project.title}</Link>
+        <StatusBadge tone={project.statusTone}>{project.status}</StatusBadge>
       </div>
-    </div>
+      <nav className="project-header__nav" aria-label="Project sections">
+        {TABS.map((t) => (
+          <NavLink key={t.label} end to={t.to ? `${base}/${t.to}` : base} className="project-header__link" aria-current={t.match(rest) ? "page" : undefined}>
+            <Icon name={t.icon} />{t.label}
+          </NavLink>
+        ))}
+      </nav>
+      <button type="button" className="btn btn--ghost btn--sm project-header__share" onClick={share}>
+        <Icon name={copied ? "check" : "share"} />{copied ? "Link copied" : "Share"}
+      </button>
+    </aside>
   );
 }

@@ -1,4 +1,4 @@
-// Project text search. People type addresses ("SE Alder St"), plurals ("bus stops") and
+// Project text search. People type addresses ("SE Hawthorne Blvd"), plurals ("bus stops") and
 // everyday words ("crosswalk"), so both sides are normalised before matching: filler
 // words are dropped, simple plurals are stemmed, and each query word may be a prefix.
 

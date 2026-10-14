@@ -239,6 +239,8 @@
 
 /* ————————————————— Project overview ————————————————— */
 .ov { display: block; }
+/* Fill the column beside the project sidebar so both side margins stay at the gutter. */
+.ov .wrap { max-width: none; }
 .ov-hero { display: grid; grid-template-columns: minmax(0, 7.4fr) minmax(0, 4.6fr); gap: var(--s12); align-items: start; padding-block: var(--s12) var(--s10); }
 .ov-hero__copy { display: grid; gap: var(--s5); justify-items: start; }
 .ov-hero__badges { display: flex; gap: 8px; flex-wrap: wrap; }
@@ -252,7 +254,7 @@
 .ov-hero__access a:hover { color: var(--ink); text-decoration: underline; text-underline-offset: 3px; }
 .ov-hero__access svg { width: 14px; height: 14px; }
 
-.ov-facts { border: 1px solid var(--line); border-radius: var(--r-card); padding: var(--s5) var(--s6) var(--s4); background: var(--surface); }
+.ov-facts { justify-self: end; width: 100%; max-width: 480px; border: 1px solid var(--line); border-radius: var(--r-card); padding: var(--s5) var(--s6) var(--s4); background: var(--surface); }
 .ov-facts__title { font: 600 15px/1.3 var(--font); margin-bottom: var(--s2); }
 .ov-facts__list > div { display: grid; grid-template-columns: 112px 1fr; gap: var(--s3); padding-block: 11px; border-bottom: 1px solid var(--line); font: var(--t-compact); }
 .ov-facts__list dt { color: var(--ink-2); }
@@ -345,7 +347,7 @@
 
 @media (max-width: 1100px) {
   .ov-hero { grid-template-columns: 1fr; gap: var(--s8); }
-  .ov-facts { max-width: 560px; }
+  .ov-facts { justify-self: start; max-width: 560px; }
   .ov-cols { grid-template-columns: 1fr; }
   .ov-tl { grid-template-columns: 1fr; gap: 0; }
   .ov-tl__item { padding: 0 0 var(--s5) 30px; }
@@ -427,7 +429,7 @@
 .hiw-truth__col { padding: var(--s6) var(--s8); border-radius: var(--r-panel); border: 1px solid var(--line); }
 .hiw-truth__col.is-made { background: var(--warning-tint); border-color: transparent; }
 .hiw-truth__top { padding-bottom: var(--s4); margin-bottom: var(--s2); border-bottom: 1px solid var(--line); }
-.hiw-truth__col.is-made .hiw-truth__top { border-color: rgba(138, 83, 16, 0.15); }
+.hiw-truth__col.is-made .hiw-truth__top { border-color: rgba(55, 65, 81, 0.15); }
 .hiw-truth__top .truth { font-size: 13px; font-weight: 600; text-transform: uppercase; letter-spacing: 0.06em; }
 .hiw-truth ul { display: grid; }
 .hiw-truth li { display: flex; gap: 12px; padding-block: 12px; }
@@ -449,7 +451,7 @@
 .hiw-cta__actions { display: flex; gap: var(--s3); flex-wrap: wrap; }
 .hiw-cta__box .btn--secondary { background: transparent; color: #fff; box-shadow: inset 0 0 0 1px rgba(255, 255, 255, 0.3); }
 .hiw-cta__box .btn--secondary:hover { background: rgba(255, 255, 255, 0.08); }
-.hiw-cta__box :focus-visible { box-shadow: 0 0 0 2px var(--ink), 0 0 0 4px #9fb2ff; }
+.hiw-cta__box :focus-visible { box-shadow: 0 0 0 2px var(--ink), 0 0 0 4px #86efac; }
 
 @media (max-width: 1023px) {
   .hiw-stage { grid-template-columns: 56px minmax(0, 1fr); gap: var(--s4) var(--s6); }
@@ -509,3 +511,6 @@
 .nf__lead { max-width: 48ch; }
 .nf__actions { display: flex; gap: var(--s3); flex-wrap: wrap; justify-content: center; margin-top: var(--s2); }
 .nf__alt { margin-top: var(--s2); }
+.pv-factlist { display: grid; gap: 6px; }
+.pv-factlist li { position: relative; padding-left: 16px; }
+.pv-factlist li::before { content: ""; position: absolute; left: 3px; top: 8px; width: 6px; height: 6px; border-radius: 50%; background: var(--accent); }
